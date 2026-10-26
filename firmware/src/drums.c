@@ -6,7 +6,16 @@
  * (outside the parts' voice budget). One-shots: note-offs are ignored; a closed or
  * pedal hi-hat chokes the open one. LEVEL / REV / DLY: GLO > DRUMS (G_DRLVL, G_DRREV, G_DRDLY);
  * PAN and MUTE: the drum track's P_PAN / P_MUTE. Rendered from the audio ISR. */
+#ifndef NDRUM                    /* (a host may give the drums more voices: Kraken) */
 #define NDRUM 6
+#endif
+/* a host's own treatment of each drum voice before the mix (Kraken: a level, a pan, a filter per sound);
+ * on the FM-1, nothing */
+#ifndef DRUM_VOICE_FX
+#define DRUM_VOICE_FX(k, s) (s)
+#define DRUM_VOICE_GL(k, g) (g)
+#define DRUM_VOICE_GR(k, g) (g)
+#endif
 #include "drum_synth.c"       /* synthesised kits (DS_KITS) */
 /* P_E0 was unused on the drum track: it holds the kit. 0..4: the GM sample kit and its four
  * treatments (as before: old projects keep their kit), 5..: the synthesised kits, then (2.4) USR1..USR4:
@@ -382,6 +391,7 @@ static inline void drums_mix(int32_t *ml, int32_t *mr, int32_t *rev, int32_t *dl
             v->active = 0;
         for (i = 0; i < m; i++) {
             int32_t s = mulq15(ds_buf[i], mulq15(lvl, 32767 - drums.a0 - (((drums.a1 - drums.a0) * (int32_t)i) >> CTL_LOG2)));
+            s = DRUM_VOICE_FX(k, s);
             v->s[7] = s;
             if (s > pk || -s > pk)
                 pk = s < 0 ? -s : s;
@@ -389,8 +399,8 @@ static inline void drums_mix(int32_t *ml, int32_t *mr, int32_t *rev, int32_t *dl
                 mono[i] += s;
                 continue;
             }
-            ml[i] += (s * gl) >> 12;
-            mr[i] += (s * gr) >> 12;
+            ml[i] += (s * DRUM_VOICE_GL(k, gl)) >> 12;
+            mr[i] += (s * DRUM_VOICE_GR(k, gr)) >> 12;
             if (send)
                 rev[i] += mulq15(s, send);
             if (dsend)
@@ -443,6 +453,7 @@ static inline void drums_mix(int32_t *ml, int32_t *mr, int32_t *rev, int32_t *dl
                 drums.denv[k] = (int32_t)(((uint32_t)drums.denv[k] * drums.dk[k]) >> 16);
                 if (drums.denv[k] < 8) v->active = 0;
             }
+            s = DRUM_VOICE_FX(k, s);
             v->s[7] = s;
             if (s > pk || -s > pk)
                 pk = s < 0 ? -s : s;
@@ -450,8 +461,8 @@ static inline void drums_mix(int32_t *ml, int32_t *mr, int32_t *rev, int32_t *dl
                 mono[i] += s;
                 continue;
             }
-            ml[i] += (s * gl) >> 12;
-            mr[i] += (s * gr) >> 12;
+            ml[i] += (s * DRUM_VOICE_GL(k, gl)) >> 12;
+            mr[i] += (s * DRUM_VOICE_GR(k, gr)) >> 12;
             if (send)
                 rev[i] += mulq15(s, send);
             if (dsend)
