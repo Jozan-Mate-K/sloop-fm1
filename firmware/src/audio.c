@@ -25,21 +25,43 @@ static volatile uint32_t t5_nested_ticks;              /* TIMER4 ticks TIMER5 sp
 static int16_t scope_buf[SCOPE_N], scope_bufr[SCOPE_N];   /* left, right (the visualiser): the mix at full level */
 static uint32_t scope_w;
 
+/* 2.8.2, GLO > SYSTEM > CLK OUT (G_ACLK): the audio sync click. While on, one channel is given over to a short, loud click
+ * on every clock tick (seq.c aclk_block sets aclk_hi, the samples of the click left to play) and the other sums the stereo
+ * mix to mono (L+R)/2, so nothing panned is lost and the click never bleeds into the music. SIDE (G_ACLKCH) picks the
+ * channel: RIGHT (a Volca's SYNC IN over a splitter) or LEFT (a Pocket Operator reads sync on its left channel). The click
+ * is a full-amplitude SQUARE burst, not a flat gate: the output is AC-coupled, so a DC level would pass as one brief spike
+ * a Pocket Operator cannot latch onto; a square (toggled every 8 samples, ~2.8 kHz) is genuinely AC and passes intact as a
+ * strong, loud tick. It is written raw, after the master volume and the limiter (fx.c mix_block): full level whatever the
+ * knob does, back to ground (0) between ticks so there is no DC hum. The USB-audio tap above is untouched (stereo mix). */
+#define ACLK_LEVEL (32767 << 8)                         /* 0 dBFS: the loudest the codec gives (+6 dB over the audio ceiling) */
 static void audio_block(int32_t *out, uint32_t n)       /* mix (fx.c), then Q15 -> 24 bit */
 {
     uint32_t i;
+    int aclk_on, aclk_left;
     mix_block(out, n);
 #if FELUCCA_UAC
     uac_tap(usb_full_now ? usb_out : out, n);           /* the USB audio input: the master output, or at full level */
 #endif
+    aclk_on = song.g[G_ACLK] != 0;                      /* one channel is the sync click, the other a mono sum */
+    aclk_left = song.g[G_ACLKCH] != 0;                  /* SIDE: 0 the click on RIGHT (Volca), 1 on LEFT (Pocket Operator) */
     for (i = 0; i < n; i++) {
         if (i & 1u)
         {
             scope_bufr[scope_w & (SCOPE_N - 1u)] = vis_tap[2u * i + 1u];   /* (fx.c: MASTER all the way up) */
             scope_buf[scope_w++ & (SCOPE_N - 1u)] = vis_tap[2u * i];
         }
-        out[2u * i] <<= OUT_SHIFT;
-        out[2u * i + 1u] <<= OUT_SHIFT;
+        if (aclk_on) {
+            int32_t mono = (out[2u * i] + out[2u * i + 1u]) << (OUT_SHIFT - 1u);   /* (L+R)/2: each side is knee-bounded
+                                                                                   * (fx.c), so the sum never overflows */
+            int32_t pulse = aclk_hi ? ((aclk_hi & 8u) ? ACLK_LEVEL : -ACLK_LEVEL) : 0;   /* a full-scale square burst */
+            out[2u * i] = aclk_left ? pulse : mono;
+            out[2u * i + 1u] = aclk_left ? mono : pulse;
+            if (aclk_hi)
+                aclk_hi--;
+        } else {
+            out[2u * i] <<= OUT_SHIFT;
+            out[2u * i + 1u] <<= OUT_SHIFT;
+        }
     }
 }
 
