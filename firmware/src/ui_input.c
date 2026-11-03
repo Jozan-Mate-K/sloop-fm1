@@ -107,7 +107,7 @@ UI_SMALL static uint32_t keys_lit(void)
     track_t *t = TSEL;
     switch (ui.layer) {
     case LY_FX:
-        return punch.req >= 0 ? 1u << punch_key_of_fx((uint32_t)punch.req) : 0u;
+        return punch.req >= 0 && !punch.clear ? 1u << punch_key_of_fx((uint32_t)punch.req) : 0u;   /* (the flush: none) */
     case LY_STEP: {                                /* the steps that play; the playhead blinks */
         uint32_t len = trk_len(t);
         for (i = 0; i < 16u; i++) {
@@ -1025,7 +1025,19 @@ UI_SMALL static void holds_input(uint32_t pressed, uint32_t now_ms)
     static uint32_t rec_t0, save_t0;
     uint32_t rb = 1u << panel.btn[B_REC], sb = 1u << panel.btn[B_SAVE];
     uint32_t rec_down = (fm1_in.buttons & rb) != 0u, save_down = (fm1_in.buttons & sb) != 0u;
-    if (on_song_page())
+    uint32_t fx_down = punch.hold && (fm1_in.buttons & ly_bit[LY_FX]) != 0u;   /* the FX button itself (the layer locked
+                                                                                * open: REC records as ever) */
+    punch.clear = (uint8_t)(fx_down && rec_down);         /* (2.8.5) FX + REC held: the flush (from the raw buttons, so
+                                                           * the song-page line below does not hide it; seq.c acts on it) */
+    if (fx_down) {                                        /* REC is the flush, not record / track-clear */
+        if (rec_on && !eaten && prev_rec && !song.rec) {
+            song.rec = prev_rec;                          /* REC first (it ended the take), then FX: that press is undone */
+            rec_wait = prev_wait;
+            ui.force = 1;
+        }
+        rec_on = 0;
+        rec_down = 0, pressed &= ~rb;
+    } else if (on_song_page())
         rec_down = 0, pressed &= ~rb;                     /* (the song page: REC stores a section) */
     /* REC */
     if (pressed & rb) {
@@ -1133,6 +1145,7 @@ UI_SMALL static void ui_input(void)
     kb_grid = (uint8_t)grid_keys_on();                  /* (seq.c: the keys are the grid's steps) */
     if (ui.menu) {                                      /* HOME / REC taps do nothing here */
         punch.hold = 0;
+        punch.clear = 0;                                /* (2.8.5: the flush is let go when the menu opens) */
         thr_req = 0;
         if (!ui.home_t0)
             menu_input(pressed);
