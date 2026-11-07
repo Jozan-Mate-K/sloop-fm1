@@ -2185,11 +2185,14 @@ static void midi_fx(uint32_t note, int on)
     if (on) {
         punch.req = (int8_t)fx;
         punch.keybit = 0;                        /* (no FM-1 key holds it: a key's release does not end it) */
+        punch.live = 1;                          /* (2.8.5) a live MIDI note holds it: it wins over the FX lane */
         mfx_key = (uint8_t)(k + 1u);
     } else if (mfx_key == k + 1u) {
         mfx_key = 0;
-        if (!punch.keybit)                       /* (an FM-1 key took it over: its release ends it) */
+        if (!punch.keybit) {                     /* (an FM-1 key took it over: its release ends it) */
             punch.req = -1;
+            punch.live = 0;
+        }
     }
 }
 
@@ -2207,6 +2210,7 @@ static void key_down(uint32_t k)
         if (fx >= 0 && fx < (int32_t)PUNCH_NFX) {
             punch.req = (int8_t)fx;
             punch.keybit = 1u << k;
+            punch.live = 1;                           /* (2.8.5) a live key holds it: it wins over the FX lane */
         }
         return;
     }
@@ -2329,6 +2333,7 @@ static void key_up(uint32_t k)
         if (punch.keybit == 1u << k) {                /* its key is up: the mix comes back */
             punch.keybit = 0;
             punch.req = -1;
+            punch.live = 0;                           /* (2.8.5) the live effect let go: the lane may drive FX again */
         }
         return;
     case KS_UI:
@@ -2575,6 +2580,7 @@ static void seq_reset_tracks(uint32_t pos)
 #endif
     fill_last_bar = 0xFFFFFFFFu;                   /* (the same for an armed fill bar) */
     click_last = SEQ_NONE;
+    fxa.last_cell = -1;                            /* (2.8.5: the FX lane enters its cell 0 with them) */
     song.tick = 0;
     song.playing = 1;
     slicer_start(pos);                             /* slicer.c: its step 0 with the sequencer's */
@@ -3307,6 +3313,87 @@ static void aclk_block(uint32_t n)
 
 /* everything that happens between two rendered blocks: transport, input, the steps of every
  * track at the clock, the click, the rolls and the arps; then the clock moves on by n samples */
+/* (2.8.5) the punch-in FX automation lane (punch.c fx_live). Once a block, at the block's clock position: record the
+ * FX played while REC is on into 1/16 cells of the loop, and replay them each loop. A live key or MIDI note
+ * (punch.live) always wins over the lane; FX + REC (punch.clear) is the flush, which keeps the mix dry and, while
+ * recording, writes "effects off" into the cells it crosses. One value a cell: one effect at a time, no stacking. */
+static uint32_t fxa_len(void)                        /* cells in the lane: the loop's bars (its longest pattern, as
+                                                      * section_bars, of the tracks playing) x 16, clamped 16..FXA_MAX */
+{
+    uint32_t k, n, bars = 1u;
+    for (k = 0; k < NTRK; k++) {
+        uint32_t len = (uint32_t)clamp(trk[k].p[P_SLEN], 1, NSTEP), u = div_units((uint32_t)trk[k].p[P_SDIV] % NDIV_STEP);
+        uint32_t b = (len * u + 4u * BEAT_U - 1u) / (4u * BEAT_U);
+        if (b > bars)
+            bars = b;
+    }
+    n = bars * 16u;
+    return n > FXA_MAX ? FXA_MAX : n;
+}
+static void fxa_put(uint32_t cell, uint8_t v)        /* record v into a cell (the first write starts an empty lane) */
+{
+    if (!fxa.on) {
+        memset(fx_live, FXA_EMPTY, FXA_MAX);
+        fxa.on = 1;
+    }
+    if (fx_live[cell] != v) {
+        fx_live[cell] = v;
+        fxa.rev++;
+    }
+}
+static void punch_fx_auto(void)
+{
+    uint32_t len, at, cell, u = BEAT_U / 4u;         /* (u: a cell, in clock units) */
+    uint8_t g, v;
+    int entered, late;
+    if (!song.playing) {                             /* stopped: the lane neither records nor replays, and lets go */
+        fxa.last_cell = -1;
+        fxa.wcell = -1;
+        fxa.gest = FXA_NONE;
+        fxa_end();
+        return;
+    }
+    g = punch.clear ? FXA_CLEAR : punch.live && punch.req >= 0 ? (uint8_t)punch.req : FXA_NONE;   /* the gesture now */
+    if (!fxa.on && !song.rec) {                      /* nothing recorded, nothing recording: as before the lane */
+        fxa.last_cell = -1;
+        fxa.gest = g;
+        fxa_end();
+        return;
+    }
+    len = fxa_len();
+    at = (clk_beat % (len / 4u)) * BEAT_U + clk_pos; /* clock units into the lane */
+    cell = at / u % len;
+    late = at % u >= u / 2u;                         /* in the second half of the cell */
+    entered = (int32_t)cell != fxa.last_cell;
+    fxa.last_cell = (int32_t)cell;
+    if (song.rec) {                                  /* record: nothing held leaves a cell as it was (overdub) */
+        if (entered) {
+            fxa.wcell = -1;
+            if (g != FXA_NONE) {                     /* held into the cell: it fills it */
+                fxa.wcell = (int32_t)cell;
+                fxa.wold = fx_live[cell];
+                fxa_put(cell, g);
+            }
+        } else if (g != fxa.gest) {
+            if (g != FXA_NONE)                       /* it starts (or changes) here: in this cell, or from its second half
+                                                      * in the next one (the nearest; a tap is never lost) */
+                fxa_put(late ? (cell + 1u) % len : cell, g);
+            else if (fxa.wcell == (int32_t)cell && !late)
+                fx_live[cell] = fxa.wold, fxa.rev++; /* it ends early in a cell it filled on entering: not its */
+        }
+    }
+    if (punch.live) {
+        fxa.drove = 0;                               /* (req is the key's) */
+    } else if (!fxa.on) {
+        fxa_end();
+    } else if (!punch.clear && (entered || g != fxa.gest)) {   /* replay: a new cell, or a key / the flush let go */
+        v = fx_live[cell];
+        punch.req = v <= (uint8_t)PX_FADE ? (int8_t)v : -1;   /* EMPTY / CLEAR: no effect */
+        fxa.drove = 1;
+    }
+    fxa.gest = g;
+}
+
 static void events_block(uint32_t n)
 {
     uint32_t i, pr, adv;
@@ -3600,6 +3687,7 @@ static void events_block(uint32_t n)
     roll_block(adv);
     for (i = 0; i < NPART; i++)
         arp_tick(&trk[i], adv);
+    punch_fx_auto();                                  /* (2.8.5) record / replay the punch-in FX lane (also flush) */
     if (song.playing) {
         song.tick++;
         clk_pos += adv;
