@@ -342,7 +342,7 @@ LENGTH and START apply when you record at a tempo (MODE *tempo*, or a project th
 
 - **Synth tracks:** the notes (and chords) with their lengths; ties for held notes; ARP rolls as ratchets; CHORD+ chords as they sound.
 - **Drum track:** the hits with their levels; ARP rolls as **ratchets** (a 1/32 roll on a 1/16 track: x2 on each step).
-- Never recorded: punch-in effects, the click, notes played in a layer that uses the keys for something else (FX, SEQ, GLO…).
+- Into the track: never the click, nor notes played in a layer that uses the keys for something else (FX, SEQ, GLO…). (2.8.5) The **punch-in effects** you play while REC is on are recorded too, but into the loop's own [FX automation](#punch-in-effects), not the track — they play over the whole mix, not one part.
 
 ---
 
@@ -364,7 +364,8 @@ All seven layers at a glance:
 
 | Control | Does |
 | --- | --- |
-| **FX + a key** | the [punch-in effect](#punch-in-effects) of that key (16 white keys, and 11 black keys, 2.6), on the whole mix, for as long as the key is held |
+| **FX + a key** | the [punch-in effect](#punch-in-effects) of that key (16 white keys, and 11 black keys, 2.6), on the whole mix, for as long as the key is held; while REC is on it is recorded into the loop and replays each pass (2.8.5) |
+| **FX + REC** (both buttons held, 2.8.5) | **flush**: the mix goes dry, and while recording writes *effects off* over the loop — hold it across the loop to wipe the recorded punch-in FX, or over one part to clear just that. With the FX layer locked open (FX + HOME), REC alone records as usual |
 | **FX + KNOB 1** | master **FILTER**: left a low-pass, right a high-pass, centre off |
 | **FX + KNOB 2** | master **DUST** (old sampler and vinyl) |
 | **FX + KNOB 3** | master **DUCK** (sidechain pump from the kick) |
@@ -856,6 +857,10 @@ On FX + KNOB 1–3, or GLO → MASTER:
 | | | F#5 | **FADE OUT**: the mix fades to nothing over two beats |
 
 The screen shows the 27 keys as a keyboard: the white keys in four rows of four, as on the other layers, the black keys above them, each between the two white keys it sits between on the FM-1 (the one after a row's last white key at the right end of that row). The effect held is lit white.
+
+**Record your FX into the loop (2.8.5).** While **REC** is on (recording or overdubbing), the punch-in effects you play are written into the loop and come back on every pass, like a pocket operator: hold FX and play effects over the bars where you want them, and they replay there each time round — the lit key follows the recording so you can see what you laid down. Play an effect over the same spot on a later pass to change it; the rest of the loop keeps what it had (overdub). Only one effect plays at a time (no stacking), and a key you hold always wins over the recording while you hold it. The effects land on the 1/16 grid: a tap is kept in the nearest 1/16, and an effect let go early in a 1/16 does not spill over it. The FX automation goes with the loop, as its notes do: it is stored with a section (SAVE + a section key, or SAVE > PROJECT) and comes back when that section is loaded or played (a jump, a chain, the song); the loop you are working on keeps its own, saved by the autosave. It covers up to four bars: in a longer loop it repeats every four bars. A project backed up or restored with the editor leaves its FX automation behind.
+
+**Flush — FX + REC (2.8.5).** To take recorded effects out, hold the **FX** button and **REC** together (either one first; while recording, a REC pressed first does not end the take): the mix goes dry, and while recording it writes *effects off* over every spot it passes. Hold it across the whole loop to wipe the FX you recorded, or over one part to clear just that part. (This is the pocket-operator FX 16 idea — a punch-in that removes effects instead of adding one.)
 
 ### Texture (2.6)
 

@@ -27,6 +27,11 @@ static int16_t punch_ring[PUNCH_N] __attribute__((section(".pool")));
 static struct {
     volatile int8_t req;          /* effect asked for by the keys (-1 none), ISR keyboard_block */
     volatile uint8_t hold;        /* FX button held (UI main loop) */
+    volatile uint8_t live;        /* a live source (FM-1 key or MIDI) holds an effect now (seq.c): it wins over the
+                                   * recorded FX lane, and is what the lane captures while recording */
+    volatile uint8_t clear;       /* 2.8.5: the flush (FX button + REC held, UI main loop): the mix dry while it is
+                                   * held (punch_want; req is kept, a key still held comes back after it), and while
+                                   * recording "effects off" into the FX lane */
     uint32_t keybit;              /* the key that started it */
     int8_t cur;                   /* effect playing (fading out when req differs) */
     int32_t g;                    /* wet gain Q15 */
@@ -48,6 +53,84 @@ static struct {
     int32_t mabs;                 /* the mix's mean level, |l| + |r| (FREEZE's target), ~0.2 s */
     int32_t fg;                   /* FREEZE: the held reverb's gain, Q10 */
 } punch = {.req = -1, .cur = -1, .fg = 8192};
+
+/* 2.8.5: the FX automation lane. The punch-in FX you play while REC is on are written into a lane of 1/16-note
+ * cells over the loop and replayed each time it comes round (overdub: a cell you do not play over keeps what it
+ * held). A held effect fills the cells it spans; FX + REC (the flush) writes FXA_CLEAR, erasing effects for as long
+ * as it is held. One effect at a time, no stacking (a cell is one value). The lane goes with the loop as its patterns
+ * do: the engine plays and records the working one (fx_live, the working project's, autosaved with it); a section
+ * keeps its own (fx_slot), taken from the working one when the section is stored or saved (fxa_store) and made the
+ * working one when it is loaded or played (fxa_recall). The record/replay step (punch_fx_auto) runs in seq.c, where
+ * the clock and the patterns' length are known; the lanes and their state live here, before it. */
+#define FXA_MAX   64u                 /* 1/16 cells, up to four bars (a longer loop: the lane repeats every four) */
+#define FXA_EMPTY 0xFEu               /* a cell never written: left alone on an overdub pass, no effect on playback */
+#define FXA_CLEAR 0xFFu               /* the flush: effects off here (distinct from EMPTY: it erases a prior effect) */
+#define FXA_NONE  0xFDu               /* (the record step: no gesture held) */
+/* Not .noinit (its 224 spare bytes would not hold them): the sections' lanes are read from flash at every boot
+ * (project.c persist_boot), the working one with the autosave */
+static uint8_t fx_live[FXA_MAX];      /* the working lane (audio ISR) */
+static uint8_t fx_slot[4][FXA_MAX];   /* each section's (written by the UI; read by the ISR when a section starts) */
+static uint8_t fx_keep[FXA_MAX];      /* song mode puts the working lane aside with the loop (arranger_scene.c) */
+static struct {
+    volatile int32_t last_cell;       /* the cell the step last entered (-1 none: the next block enters one) */
+    volatile uint32_t rev;            /* bumped on every change of the working lane (project.c: the autosave) */
+    volatile uint8_t on;              /* the working lane has content: replay runs only then (else: as before) */
+    uint8_t slot_on;                  /* bit s: section s has a lane */
+    uint8_t keep_on;                  /* fx_keep has content */
+    uint8_t drove;                    /* punch.req is the lane's (not a key's): let go at STOP / with the lane */
+    uint8_t gest;                     /* the gesture of the block before (FXA_NONE none): its start and end */
+    uint8_t wold;                     /* what cell wcell held before the gesture filled it on entering */
+    int32_t wcell;                    /* that cell (-1 none): put back if the gesture ends early in it */
+} fxa = {.last_cell = -1, .gest = FXA_NONE, .wcell = -1};
+
+static int32_t punch_want(void) { return punch.clear ? -1 : punch.req; }   /* the effect to play: the flush wins */
+
+/* the lane lets go of the mix (stopped, or no lane now): an effect it set ends; a key's or a MIDI note's stays */
+static void fxa_end(void)
+{
+    if (fxa.drove && !punch.live)
+        punch.req = -1;
+    fxa.drove = 0;
+}
+/* the working lane changed wholesale (a section, the song's end): replay from the next block, nothing held over */
+static void fxa_reset(void)
+{
+    fxa.rev++;
+    fxa.last_cell = -1;
+    fxa.wcell = -1;
+    fxa_end();
+}
+/* section s's lane is the working one now (loaded, or played: a jump, the chain, the song). ISR or IRQ off */
+static void fxa_recall(uint32_t s)
+{
+    s &= 3u;
+    fxa.on = (uint8_t)((fxa.slot_on >> s) & 1u);
+    if (fxa.on)
+        memcpy(fx_live, fx_slot[s], FXA_MAX);
+    fxa_reset();
+}
+/* the working lane into section s (stored, saved). IRQ off: the ISR writes the working lane */
+static void fxa_store(uint32_t s)
+{
+    s &= 3u;
+    if (fxa.on) {
+        memcpy(fx_slot[s], fx_live, FXA_MAX);
+        fxa.slot_on |= (uint8_t)(1u << s);
+    } else {
+        fxa.slot_on &= (uint8_t)~(1u << s);
+    }
+}
+static void fxa_keep(void)                /* song mode: the working lane aside (audio ISR: seq_start) */
+{
+    memcpy(fx_keep, fx_live, FXA_MAX);
+    fxa.keep_on = fxa.on;
+}
+static void fxa_unkeep(void)              /* and back (audio ISR: seq_stop) */
+{
+    memcpy(fx_live, fx_keep, FXA_MAX);
+    fxa.on = fxa.keep_on;
+    fxa_reset();
+}
 
 static int px_loop(int32_t fx) { return fx <= PX_STUT || fx == PX_LOOP8T; }   /* on the grid */
 static int px_replay(int32_t fx) { return fx <= PX_HALF || fx == PX_LOOP8T; } /* replays a span of the ring */
@@ -232,7 +315,7 @@ static void punch_freeze_feed(int32_t *rev, const int32_t *l, const int32_t *r, 
 static void punch_process(int32_t *l, int32_t *r, uint32_t n)
 {
     uint32_t i;
-    int32_t want = punch.req, pstep;
+    int32_t want = punch_want(), pstep;
     uint32_t beat, step, echo_d, binc, fdec;
     static int32_t kl[CTL], kr[CTL];                    /* (static: the ISR stack is small) */
     tsvf_t c1, c2;

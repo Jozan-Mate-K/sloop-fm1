@@ -41,6 +41,7 @@ static void arrangement_apply(uint32_t scene)
         t->rskip_lanes = 0;
     }
     proj_apply(&proj_slot[scene], 0);
+    fxa_recall(scene);                            /* (2.8.5) its FX lane plays with it */
     sync_reload = 1;
     ui.force = 1;
 }
@@ -52,6 +53,7 @@ static uint8_t song_kept;
 static void song_backup(void)                  /* (audio ISR: seq_start) */
 {
     proj_capture(&song_keep);
+    fxa_keep();                                   /* (2.8.5) and its FX lane */
     song_kept = 1;
 }
 static void song_restore(void)                 /* (audio ISR: seq_stop) */
@@ -67,6 +69,7 @@ static void song_restore(void)                 /* (audio ISR: seq_stop) */
         trk[i].arp_ch[0] = trk[i].arp_ch[1] = trk[i].arp_ch[2] = 0;
     }
     proj_apply(&song_keep, 1);
+    fxa_unkeep();
     song.sel = (uint8_t)(song_keep.sel < NTRK ? song_keep.sel : 0u);
     sync_reload = 1;
     ui.force = 1;

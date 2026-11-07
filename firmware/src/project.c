@@ -570,12 +570,80 @@ static union {
     project_v1_t v1;
 } proj_tmp;
 UI_SMALL static void *up_stage(void) { return &proj_tmp; }   /* upreset.c: a user preset bank staged for a write (sloop-lab) */
+
+/* (2.8.5) the punch-in FX automation lanes (punch.c fx_slot, fx_live) ride in the side record of their project's flash
+ * object (a section's, the autosave's; storage.c st_side, bytes 64..256): older SLOOP checks the payload's exact length
+ * and never sees it, so projects stay forward- and backward-compatible with no format bump. A magic + checksum guard it
+ * on load; a project with no recorded FX attaches nothing (the object is byte-identical to before). */
+#define FXSIDE_MAGIC 0x31415846u                   /* "FXA1" */
+typedef struct { uint32_t magic; uint8_t cells[FXA_MAX]; uint32_t sum; } fxside_t;
+_Static_assert(sizeof(fxside_t) <= ST_SIDE_MAX, "the FX lane side record fits beside a project");
+static fxside_t fxside_out;                         /* staged for the next save (st_side points at it) */
+static uint32_t fxside_rev;                         /* fxa.rev when the working lane was staged (the autosave) */
+static uint32_t fxside_sum(const fxside_t *s)
+{
+    uint32_t i, h = s->magic;
+    for (i = 0; i < FXA_MAX; i++)
+        h = h * 31u + s->cells[i];
+    return h;
+}
+/* st_save of a project object with a lane (on: it has content, else nothing attached) as its side record; staged with
+ * the IRQ off (the working lane is the audio ISR's), disarmed after, so the next save is clean */
+static int st_save_fx(uint32_t obj, const uint8_t *cells, uint32_t on, const void *src, uint32_t len)
+{
+    int rc;
+    fm1_irq_off();
+    if (on) {
+        fxside_out.magic = FXSIDE_MAGIC;
+        memcpy(fxside_out.cells, cells, FXA_MAX);
+        fxside_out.sum = fxside_sum(&fxside_out);
+        st_side = &fxside_out;
+        st_side_len = sizeof fxside_out;
+    }
+    fxside_rev = fxa.rev;
+    fm1_irq_on();
+    rc = st_save(obj, src, len);
+    st_side = 0;
+    st_side_len = 0;
+    return rc;
+}
+/* a lane back from a project object into cells: 1, or 0 (none / invalid: cells untouched) */
+static uint32_t fx_side_get(uint32_t obj, uint8_t *cells)
+{
+    fxside_t s;
+    if (st_side_load(obj, &s, sizeof s) || s.magic != FXSIDE_MAGIC || fxside_sum(&s) != s.sum)
+        return 0;
+    memcpy(cells, s.cells, FXA_MAX);
+    return 1;
+}
+static int st_save_slot(uint32_t slot, const void *src, uint32_t len)   /* a section's object, with its lane */
+{
+    slot &= 3u;
+    return st_save_fx(OBJ_PROJECT0 + slot, fx_slot[slot], (fxa.slot_on >> slot) & 1u, src, len);
+}
+static void fx_side_read(uint32_t slot)             /* a section's lane, as its object in flash has it */
+{
+    uint8_t c[FXA_MAX];
+    uint32_t on;
+    slot &= 3u;
+    on = fx_side_get(OBJ_PROJECT0 + slot, c);
+    fm1_irq_off();                                  /* (the ISR reads fx_slot when a section starts) */
+    if (on) {
+        memcpy(fx_slot[slot], c, FXA_MAX);
+        fxa.slot_on |= (uint8_t)(1u << slot);
+    } else {
+        fxa.slot_on &= (uint8_t)~(1u << slot);
+    }
+    fm1_irq_on();
+}
+
 UI_SMALL static void proj_fetch(uint32_t slot)
 {
     project_t *q = &proj_slot[slot & 3u];
     int n = st_load(OBJ_PROJECT0 + (slot & 3u), &proj_tmp, sizeof proj_tmp);
     if (!proj_import(q, &proj_tmp, n))
         q->magic = 0;
+    fx_side_read(slot);                            /* (2.8.5) its FX automation lane, if any */
 }
 #include "fm6_bank.c"                           /* the FM6 patch bank (eng_fm6.c PTCH B1..B27): staged in proj_tmp */
 #endif
@@ -588,9 +656,12 @@ UI_SMALL static void project_save(uint32_t slot)
     if (song.playing || transport_req) { ui_message("STOP BEFORE SAVE"); return; }
 #endif
     proj_capture(p);
+    fm1_irq_off();
+    fxa_store(slot);                                    /* (2.8.5) and the working FX lane, as the section's */
+    fm1_irq_on();
 #if FELUCCA_FLASH
     if (flash_ok) {
-        if (st_save(OBJ_PROJECT0 + (slot & 3u), p, sizeof *p))
+        if (st_save_slot(slot, p, sizeof *p))
             ui_message("SAVE ERROR");
         else
             ui_say("SAVED SECTION ", SEC_NAME[slot & 3u]);
@@ -622,6 +693,7 @@ UI_SMALL static void project_erase(uint32_t slot)
 #endif
     fm1_irq_off();
     memset(&proj_slot[slot], 0, sizeof proj_slot[slot]);
+    fxa.slot_on &= (uint8_t)~(1u << slot);                  /* (2.8.5) the section's FX automation goes too */
     sec_dirty &= (uint8_t)~(1u << slot);
     if (live_sec == (int8_t)slot)
         live_sec = -1;
@@ -685,6 +757,9 @@ UI_SMALL static void project_load(uint32_t slot)
         return;
     }
     project_apply(p);
+    fm1_irq_off();
+    fxa_recall(slot);                                   /* (2.8.5) its FX lane is the working one */
+    fm1_irq_on();
     ui_say("LOADED SECTION ", SEC_NAME[slot & 3u]);
 }
 
@@ -695,6 +770,19 @@ UI_SMALL static void project_load(uint32_t slot)
 #define AUTOSAVE_GAP 20000u                    /* ms between two saves at least */
 static project_t autosave_buf __attribute__((section(".pool")));
 static uint32_t autosave_hash, autosave_ms, autosave_checked;
+static uint32_t autosave_fxrev;                /* (2.8.5) fxa.rev of the working FX lane saved with it */
+#if FELUCCA_FLASH
+UI_SMALL static int autosave_changed(void) { return autosave_buf.sum != autosave_hash || fxa.rev != autosave_fxrev; }
+UI_SMALL static int autosave_write(void)       /* autosave_buf, with the working FX lane (2.8.5) as its side record */
+{
+    int rc = st_save_fx(OBJ_AUTOSAVE, fx_live, fxa.on, &autosave_buf, sizeof autosave_buf);
+    if (rc == 0) {
+        autosave_hash = autosave_buf.sum;
+        autosave_fxrev = fxside_rev;
+    }
+    return rc;
+}
+#endif
 
 UI_SMALL static int audio_quiet(void)
 {
@@ -712,17 +800,15 @@ UI_SMALL static int audio_quiet(void)
 UI_SMALL static void autosave_tick(void)                /* main loop */
 {
 #if FELUCCA_FLASH
-    uint32_t h, now = fm1_ms;
+    uint32_t now = fm1_ms;
     if (!flash_ok || song.playing || transport_req || rec_wait || ft_on || ui.menu ||
         now - ui_input_ms < AUTOSAVE_IDLE || now - autosave_ms < AUTOSAVE_GAP || now - autosave_checked < 1000u)
         return;
     autosave_checked = now;
     proj_capture(&autosave_buf);
-    h = autosave_buf.sum;
-    if (h == autosave_hash || !audio_quiet())
+    if (!autosave_changed() || !audio_quiet())
         return;
-    if (st_save(OBJ_AUTOSAVE, &autosave_buf, sizeof autosave_buf) == 0)
-        autosave_hash = h;
+    autosave_write();
     autosave_ms = fm1_ms;
 #endif
 }
@@ -740,6 +826,17 @@ UI_SMALL static void autosave_resume(void)              /* power-on: the project
     if (!proj_import(q, &proj_tmp, n))
         return;
     autosave_hash = q->sum;
+    {   /* (2.8.5) the working FX lane saved with it (none: none) */
+        uint8_t c[FXA_MAX];
+        uint32_t on = fx_side_get(OBJ_AUTOSAVE, c);
+        fm1_irq_off();
+        if (on)
+            memcpy(fx_live, c, FXA_MAX);
+        fxa.on = (uint8_t)on;
+        fxa_reset();
+        autosave_fxrev = fxa.rev;
+        fm1_irq_on();
+    }
     if (drch_seed && !(q->rsv[0] & 0x80u) && q->g[G_DRCH] >= 0 && q->g[G_DRCH] <= 16 && q->g[G_DRCH] != midi_set[3]) {
         midi_set[3] = (uint8_t)q->g[G_DRCH];          /* (2.6) updated from 2.5: GLO > DRUMS > CH as it was there (a
                                                      * project's then, a setting of the FM-1 now), kept in the settings */
@@ -856,6 +953,8 @@ UI_SMALL static void persist_boot(void)                    /* before settings_in
                 int n = st_load(OBJ_PROJECT0 + i, &proj_tmp, sizeof proj_tmp);
                 if (n != (int)sizeof proj_slot[i] || memcmp(&proj_tmp.v6, &proj_slot[i], sizeof proj_slot[i]))
                     sec_dirty |= (uint8_t)(1u << i);
+                fx_side_read(i);                   /* (2.8.5) its FX lane (not kept in RAM over a reset): the one in
+                                                    * flash, written again with it if it is marked */
             }
     }
     dsu_boot();                                    /* SLOOP 2.5: the SYN kits (after the settings) */
@@ -1096,6 +1195,7 @@ UI_SMALL static uint32_t project_restore(uint32_t slot, const void *raw, uint32_
         if (!flash_ok || st_save(OBJ_PROJECT0 + slot, raw, 0))
             return 4;
         memset(&proj_slot[slot], 0, sizeof proj_slot[slot]);
+        fxa.slot_on &= (uint8_t)~(1u << slot);         /* (2.8.5) a restored-empty section has no FX automation */
         sec_dirty &= (uint8_t)~(1u << slot);
         return 0;
     }
@@ -1103,11 +1203,16 @@ UI_SMALL static uint32_t project_restore(uint32_t slot, const void *raw, uint32_
         return 2;
     if (slot == 4u) {
         project_apply(&autosave_buf);
+        fm1_irq_off();
+        fxa.on = 0;                                    /* (2.8.5) the editor's project brings no FX lane */
+        fxa_reset();
+        fm1_irq_on();
         return 0;
     }
     if (!flash_ok || st_save(OBJ_PROJECT0 + slot, &autosave_buf, sizeof autosave_buf))
         return 4;
     memcpy(&proj_slot[slot], &autosave_buf, sizeof proj_slot[slot]);
+    fxa.slot_on &= (uint8_t)~(1u << slot);             /* (2.8.5) a project loaded from the editor brings no FX lane */
     sec_dirty &= (uint8_t)~(1u << slot);
     return 0;
 }
@@ -1134,6 +1239,7 @@ UI_SMALL static void section_store(uint32_t s)
     s &= 3u;
     fm1_irq_off();                                      /* (the audio ISR may be applying a section) */
     proj_capture(&proj_slot[s]);
+    fxa_store(s);                                       /* (2.8.5) the FX lane goes with it */
     live_sec = (int8_t)s;
     fm1_irq_on();
     sec_dirty |= (uint8_t)(1u << s);
@@ -1142,7 +1248,10 @@ UI_SMALL static void section_load(uint32_t s)                    /* stopped: the
 {
     s &= 3u;
     project_apply(&proj_slot[s]);
+    fm1_irq_off();
+    fxa_recall(s);                                      /* (2.8.5) and its FX lane */
     live_sec = (int8_t)s;
+    fm1_irq_on();
 }
 UI_SMALL static void sections_write(void)                        /* the dirty sections and song into flash */
 {
@@ -1150,7 +1259,7 @@ UI_SMALL static void sections_write(void)                        /* the dirty se
 #if FELUCCA_FLASH
     if (flash_ok)
         for (i = 0; i < 4u; i++)
-            if (((sec_dirty >> i) & 1u) && st_save(OBJ_PROJECT0 + i, &proj_slot[i], sizeof proj_slot[i]) == 0)
+            if (((sec_dirty >> i) & 1u) && st_save_slot(i, &proj_slot[i], sizeof proj_slot[i]) == 0)
                 sec_dirty &= (uint8_t)~(1u << i);       /* (a failed write stays dirty: tried again later) */
     if (!flash_ok)
 #endif
@@ -1169,8 +1278,8 @@ UI_SMALL static void persist_flush_now(void)
 #if FELUCCA_FLASH
     if (flash_ok && !arrangement_clock.running) {     /* (a song playing: the tracks hold a section) */
         proj_capture(&autosave_buf);
-        if (autosave_buf.sum != autosave_hash && st_save(OBJ_AUTOSAVE, &autosave_buf, sizeof autosave_buf) == 0)
-            autosave_hash = autosave_buf.sum;
+        if (autosave_changed())
+            autosave_write();                       /* (2.8.5: with the working FX lane) */
     }
 #endif
 }
