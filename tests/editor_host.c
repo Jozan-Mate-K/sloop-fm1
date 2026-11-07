@@ -76,6 +76,7 @@ static uint32_t scope_w;
 #define FL_FAR(fn) fn
 static uint32_t fl_erases, fl_progs, fl_bad;          /* counters; fl_bad: a refused (out of range) access */
 static int fl_fail_at = -1;                           /* > 0: the n-th program from now fails (a torn write) */
+#include "../firmware/hal/fm1_flash_id.h"            /* FL_JEDEC_OK (project.c persist_boot, 2.8.5) */
 static uint32_t fl_jedec_ram(void) { return 0x856014u; }
 static void fl_plain_window_init(void) {}
 static uint32_t irq_save(void) { return 0; }

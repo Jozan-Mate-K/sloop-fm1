@@ -20,6 +20,8 @@ static uint32_t up_nth(uint32_t n);
 static uint32_t up_rank(uint32_t slot);
 static void up_name(uint32_t k, char *b);
 static void up_slot_label(char *b, uint32_t k);
+static void up_auto_name(char *b, uint32_t k);
+static int up_can_save(int snd);
 static void up_ui(uint32_t op, uint32_t k);
 UI_SMALL static uint32_t user_of(const track_t *t)    /* user preset slot its sound came from, UP_SLOTS = none */
 {
@@ -68,6 +70,8 @@ static struct {
     uint8_t confirm;             /* 1 = "clear the sequence?" (REC held on SEQ / ARP), 2 = "clear track n?" (TRACKS) */
     uint8_t confirm_trk;         /* the track the dialog clears */
     uint8_t uslot;               /* SAVE > USER: the selected user preset slot */
+    uint8_t nm_on, nm_pos;       /* SAVE > USER > SAVE: the name being edited (KNOB 1 its position, KNOB 2 the letter) */
+    char nm[13];                 /* (0-terminated; "" = the automatic name) */
     /* layers (ui_layers.c): a function button held, the keys and knobs do something else */
     uint8_t layer;               /* the layer drawn (LY_*), LY_PLAY = none */
     uint8_t layer_btn;           /* its button (B_*), NB = none */
@@ -100,11 +104,11 @@ static void layer_screen_draw(void);                            /* ui_layers.c *
 static void hold_screen_draw(void);
 static uint8_t layer_shown;
 
-UI_SMALL static uint32_t page_first(uint32_t fam)
+UI_SMALL static uint32_t page_first(uint32_t fam)       /* the family's first page shown (params.c page_shown) */
 {
     uint32_t i;
     for (i = 0; i < NPAGES; i++)
-        if (PAGES[i].fam == fam)
+        if (PAGES[i].fam == fam && page_shown(&PAGES[i]))
             return i;
     return 0;
 }
@@ -511,7 +515,8 @@ UI_SMALL static void open_family(uint32_t fam)
         ui.page = ui.fam_last[fam] && PAGES[ui.fam_last[fam]].fam == fam && page_shown(&PAGES[ui.fam_last[fam]])
                       ? ui.fam_last[fam] : (uint8_t)page_first(fam);
     }
-    ui.fam_last[fam] = ui.page;
+    if (!is_drum(TSEL) || fam != FAM_EDIT)              /* (the drum track's MACRO page: not kept as the synths' */
+        ui.fam_last[fam] = ui.page;                     /* last EDIT page) */
     ui.home = 0;
     page_entered();
 }
@@ -637,6 +642,7 @@ UI_SMALL static void apply_preset_to(track_t *t, uint32_t pi)
     sound_change(t);                                  /* (2.6: what sounds fades out with the old sound, no click) */
     panic_req |= (uint8_t)(1u << trk_index(t));       /* MONO/POLY may change: release what sounds */
     t->user = 0;
+    kmac_clear(trk_index(t));                         /* KNOB MACROS: a factory sound brings none (INIT, an engine) */
     if (t == TSEL)
         sync_reload = 1;
     if (!e->npresets)
@@ -1051,7 +1057,6 @@ UI_SMALL static void track_select(uint32_t i)
  * set to it, and stays until something else is learned on it or HOME > SYSTEM > LEARN CLEAR. Then turn the next knob.
  * One CC sets one parameter, a parameter has one CC: learning one again replaces both. The settings keep the map */
 static struct { uint8_t on, pick, trk, id; } mlu;
-UI_SMALL static uint32_t ml_code(uint32_t id) { return id >= P_E0 ? ML_E0 + id - P_E0 : id + 1u; }
 UI_SMALL static void ml_put(uint32_t i, uint32_t e)       /* (the ISR reads the entry: never half of one) */
 {
     fm1_irq_off();

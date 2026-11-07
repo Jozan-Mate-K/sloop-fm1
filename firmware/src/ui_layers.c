@@ -254,13 +254,7 @@ UI_SMALL static void steps_held_edit(uint32_t knob, int32_t s)
  * engine parameters it has no use for), wrapping round */
 UI_SMALL static void lock_par_step(int32_t s)
 {
-    const track_t *t = TSEL;
-    uint32_t id = ui.lock_par % P_COUNT, guard = P_COUNT;
-    do {
-        id = (id + (uint32_t)P_COUNT + (uint32_t)(s > 0 ? 1 : -1)) % P_COUNT;
-    } while (guard-- && (!p_lockable(id) || lock_desc(t, id)->max <= lock_desc(t, id)->min ||
-                         (is_drum(t) && id > P_E0 && id <= P_E7)));
-    ui.lock_par = (uint8_t)id;
+    ui.lock_par = (uint8_t)lock_next(TSEL, ui.lock_par, s, 0);
 }
 /* OCT- with step keys held: their nudge, locks and fill condition go */
 UI_SMALL static void steps_held_clear(void)
@@ -689,7 +683,7 @@ UI_SMALL static void layer_title(const char *name, const char *sub, uint16_t col
 UI_SMALL static const char *lock_label(const track_t *t, uint32_t id)   /* the lock parameter's name, lower case */
 {
     static char b[8];
-    te_lower(b, track_desc(t, id % P_COUNT)->label, 8);
+    te_lower(b, kmac_label(t, id % P_COUNT), 8);
     return b;
 }
 

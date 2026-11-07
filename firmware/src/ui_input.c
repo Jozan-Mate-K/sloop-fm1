@@ -471,6 +471,7 @@ UI_SMALL static void project_new(void)
         if (i < NPART)
             sound_change(t);                            /* (2.6: what sounds fades out with its own sound) */
         track_defaults(t);
+        kmac_clear(i);                                  /* (the drum track's KNOB MACROS too: no preset clears them) */
         if (i < NPART) {
             set_engine_of(t, TRK_DEF[i][0]);
             apply_preset_to(t, TRK_DEF[i][1]);
@@ -493,6 +494,43 @@ UI_SMALL static void project_new(void)
     ui.force = 1;
 }
 
+/* SAVE > USER > SAVE: the user preset's name, letter by letter (KNOB 1 the position, KNOB 2 the letter). It starts as
+ * the slot's name, an empty slot as the automatic one ("ANALOG 07"); 12 places, the blanks at the end dropped */
+static const char NM_SET[] = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+UI_SMALL static void nm_open(uint32_t k)
+{
+    uint32_t i;
+    memset(ui.nm, 0, sizeof ui.nm);
+    if (up_used(k))
+        up_name(k, ui.nm);
+    else
+        up_auto_name(ui.nm, k);
+    for (i = str_len(ui.nm); i < 12u; i++)
+        ui.nm[i] = ' ';
+    ui.nm_pos = 0;
+    ui.nm_on = 1;
+    ui.arm = 0;
+    ui_message("NAME IT, K4 SAVE");
+}
+UI_SMALL static void nm_char(int32_t s)                   /* the letter at the position: the next / previous of NM_SET */
+{
+    int32_t n = (int32_t)sizeof NM_SET - 1, i;
+    char *c = &ui.nm[ui.nm_pos];                          /* (0..11: KNOB 1 clamps it) */
+    for (i = 0; i < n && NM_SET[i] != *c; i++)
+        ;
+    if (i == n)                                           /* (another character, from the editor: from the blank) */
+        i = 0;
+    *c = NM_SET[(((i + s) % n) + n) % n];
+}
+UI_SMALL static const char *nm_trim(char *b)              /* the blanks at the end dropped; all blank: "" (automatic) */
+{
+    int32_t i;
+    b[12] = 0;
+    for (i = (int32_t)str_len(b) - 1; i >= 0 && b[i] == ' '; i--)
+        b[i] = 0;
+    return b;
+}
+
 UI_SMALL static void edit_param(uint32_t slot, int32_t steps)
 {
     int16_t *vp;
@@ -510,6 +548,17 @@ UI_SMALL static void edit_param(uint32_t slot, int32_t steps)
         tracks_edit(slot, steps);
         return;
     }
+    if (pg->scope == SC_MACRO) {                          /* KNOB MACROS: K1 / K3 a target (OFF in the ring, a detent a
+                                                           * step; a new one at 0: no jump), K2 / K4 its amount. Not the
+                                                           * lock parameter, not MIDI LEARN */
+        uint32_t m = pg->id[0] % KM_N, s = slot >> 1, kid = kmac_id[song.sel][m * 2u + s];
+        if (slot & 1u) {
+            if (kid < P_COUNT)                            /* (no target: no amount, nothing to save) */
+                kmac_set(song.sel, m, s, kid, kmac_amt[song.sel][m * 2u + s] + accel(EN_K1 + slot, steps, 127));
+        } else
+            kmac_set(song.sel, m, s, lock_next(TSEL, kid, steps, 1), 0);
+        return;
+    }
     if (pg->graph == GR_BROWSE) {                         /* KNOB 1: one preset, KNOB 2: the next / previous engine */
         if (slot == 0u && !is_drum(TSEL)) {
             uint32_t total, cur = preset_pos(&total);
@@ -522,8 +571,24 @@ UI_SMALL static void edit_param(uint32_t slot, int32_t steps)
         }
         return;
     }
-    if (pg->graph == GR_USER) {                           /* KNOB 1 slot; LOAD / ERASE / SAVE: GO buttons */
+    if (pg->graph == GR_USER) {                           /* KNOB 1 slot; LOAD / ERASE: GO buttons; SAVE: names it */
         static const char *const UP_GO[3] = {"LOAD", "ERASE", "SAVE"};
+        if (ui.nm_on) {                                   /* the name: KNOB 1 the position, KNOB 2 the letter (A-Z 0-9,
+                                                           * a blank), KNOB 3 cancels, KNOB 4 saves */
+            if (slot == 0u)
+                ui.nm_pos = (uint8_t)clamp((int32_t)ui.nm_pos + steps, 0, 11);
+            else if (slot == 1u)
+                nm_char(steps);
+            else if (slot == 2u) {
+                ui.nm_on = 0;
+                ui_message("NOT SAVED");
+            } else if (steps > 0) {
+                ui.nm_on = 0;
+                up_ui(2u, ui.uslot);
+            }
+            ui.force = 1;
+            return;
+        }
         if (slot == 0u) {
             ui.uslot = (uint8_t)clamp((int32_t)ui.uslot + steps, 0, UP_SLOTS - 1);
             ui.arm = 0;
@@ -531,6 +596,11 @@ UI_SMALL static void edit_param(uint32_t slot, int32_t steps)
         }
         if (steps <= 0)
             return;
+        if (slot == 3u) {                                 /* SAVE: first its name (the slot's, or the automatic one) */
+            if (up_can_save(1))
+                nm_open(ui.uslot);
+            return;
+        }
         if (ui.arm != 0xE0u + slot) {                     /* one detent arms, a second one within ~1.5 s acts */
             ui.arm = (uint8_t)(0xE0u + slot);
             ui.arm_t = 90;
@@ -541,7 +611,7 @@ UI_SMALL static void edit_param(uint32_t slot, int32_t steps)
         up_ui(slot - 1u, ui.uslot);
         return;
     }
-    if (pg->graph == GR_SLOTS && slot == 1u) {           /* 2.6: KNOB 2 ERASE, a GO button (the slot KNOB 1 picks) */
+    if (pg->graph == GR_SLOTS && slot == 2u) {           /* KNOB 3 ERASE (KNOB 2 before), a GO button (the slot KNOB 1 picks) */
         if (steps <= 0)
             return;
         if (ui.arm != 0xE8u) {                            /* one detent arms, a second one within ~1.5 s acts */
@@ -1129,6 +1199,8 @@ UI_SMALL static void ui_input(void)
     fm6_poll();                                         /* FM6: PTCH turned -> its patch */
     ml_poll();                                          /* MIDI LEARN: a CC came for the picked parameter (2.6) */
     page_fix();                                         /* (a page the track does not have: its neighbour, 2.6) */
+    if (ui.nm_on && cur_page()->graph != GR_USER)
+        ui.nm_on = 0;                                   /* (the name left unsaved with its page) */
     midi_entry();                                       /* (the STEP page's MIDI notes: read every frame, 2.6) */
     if (home == BT_HOLD) {                              /* HOME held: open the menu, or leave it */
         if (ui.menu) {
@@ -1180,27 +1252,22 @@ UI_SMALL static void ui_input(void)
         if (!(pressed & (1u << panel.btn[B_PLAY])))
             return;
         pressed &= 1u << panel.btn[B_PLAY];             /* PLAY still plays */
-        enc_hold = (1u << NE) - 1u;                     /* #102: the knobs the layer took are not read again this
-                                                         * pass (a detent counted since went to the page too) */
+        enc_hold = (1u << NE) - 1u;                     /* #102: no knob reaches the page this pass (SELECT is not
+                                                         * read above while FX is held) */
     } else if (ly_quiet()) {                            /* #39: the turns as a layer lets go are dropped */
         for (k = 0; k < 4u; k++)
             panel_enc(EN_K1 + k);
-        enc_hold |= 15u << EN_K1;
-        if (ly_quiet_sel) {                             /* (2.8.1) FX let go while SELECT still turned the fade: those
+        if (ly_quiet_sel)                               /* (2.8.1) FX let go while SELECT still turned the fade: those
                                                          * detents are dropped, not the tempo */
             panel_enc(EN_SELECT);
-            enc_hold |= 1u << EN_SELECT;
-        }
     }
     if (rec_wait && !ft_on && !ci_on) {                 /* the REC screen, armed: how it records */
         rec_knobs();                                    /* (tempo and sound still work; the track too: */
-        enc_hold |= 15u << EN_K1;                       /* (after 2.8.3, sloop-pro #6) KNOB 1..4 are the REC screen's this
-                                                         * pass: a detent counted after rec_knobs read it never reaches
-                                                         * the page under it too (K3 START also moved TRACKS' LEN) */
+                                                        /* (after 2.8.3, sloop-pro #6) rec_knobs read KNOB 1..4: the
+                                                         * page under it never gets them this pass (panel.c) */
     } else if (rec_wait || ft_on) {                     /* the arm follows) */
         for (k = 0; k < 4u; k++)                        /* a take / the count-in: KNOB 1..4 edit nothing */
             panel_enc(EN_K1 + k);
-        enc_hold |= 15u << EN_K1;
     }
 #if FELUCCA_ARRANGER
     if (on_song_page()) {
@@ -1292,12 +1359,14 @@ UI_SMALL static void ui_input(void)
     }
     if ((s = panel_enc(EN_ALGO)) != 0 && !ft_on)     /* ALGORITHM: the selected track, on every page (not in a take) */
         track_select((uint32_t)clamp((int32_t)song.sel + (s > 0 ? 1 : -1), 0, NTRK - 1));
-    if (vis_shown() && !rec_wait && !ft_on) {           /* the visualiser: SELECT its style; KNOB 1..4 (the TRACKS
-                                                         * screen's, out of sight) do nothing */
+    if (vis_shown() && !rec_wait && !ft_on) {           /* the visualiser: SELECT its style; KNOB 1..4 the selected
+                                                         * track's macros (not the TRACKS screen's, out of sight) */
         if ((s = panel_enc(EN_SELECT)) != 0)
             vis_select(s);
         for (k = 0; k < 4u; k++)
-            panel_enc(EN_K1 + k);
+            if ((s = panel_enc(EN_K1 + k)) != 0)        /* (read here, never again this pass: not the TRACKS
+                                                         * screen under it, nor page_walk / the tempo; panel.c) */
+                vis_knob(k, s);
     }
     if ((s = panel_enc(EN_SELECT)) != 0 && (rec_wait || ft_on || !page_walk(s))) {   /* SELECT: the pages of the
                                                      * family shown, else (and on the REC screen) the tempo */
@@ -1309,8 +1378,8 @@ UI_SMALL static void ui_input(void)
         int16_t *hv;
         if ((s = panel_enc(EN_K1 + k)) == 0)
             continue;
-        if (ui.home || pg->scope == SC_STEP || pg->scope == SC_TRK || page_desc(pg, k, &hv) ||
-            (pg->graph == GR_USER && k == 0u)) {     /* (not an empty column, nor "DRUM TRACK") */
+        if (ui.home || pg->scope == SC_STEP || pg->scope == SC_TRK || pg->scope == SC_MACRO || page_desc(pg, k, &hv) ||
+            (pg->graph == GR_USER && (k == 0u || (ui.nm_on && k == 1u)))) {     /* (not an empty column, nor "DRUM TRACK") */
             ui.hot_col = (uint8_t)k;
             ui.hot_t = 40;
         }

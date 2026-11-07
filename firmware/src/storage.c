@@ -172,6 +172,23 @@ UI_SMALL static int st_side_load(uint32_t obj, void *dst, uint32_t n)
     return st_read(st_sector(obj, (uint32_t)c) + ST_SIDE_OFF, dst, n) ? -1 : 0;
 }
 
+/* (KNOB MACROS) a tail record after a short payload, from ST_TAIL_OFF of the copy's sector (page aligned): as st_side,
+ * for one save, programmed before the header, checked by its reader (upreset.c up_tail_t: a magic and a CRC); an
+ * older SLOOP's save leaves it erased. RAM source; refused with a payload that reaches it */
+#define ST_TAIL_OFF 0xE00u
+static const void *st_tail;
+static uint32_t st_tail_len;
+/* n bytes from src (RAM) at off, a 256-byte page at a time: the payload, the tail */
+UI_SMALL static int st_prog_n(uint32_t off, const void *src, uint32_t n)
+{
+    uint32_t i;
+    int rc;
+    for (i = 0; i < n; i += 256u)
+        if ((rc = st_prog(off + i, (const uint8_t *)src + i, n - i > 256u ? 256u : n - i)) != 0)
+            return rc;
+    return 0;
+}
+
 /* an object in up to three parts, src then src2 then src3 (SLOOP 2.5: the settings and the SYN kits after them;
  * 2.6: then the MIDI LEARN map) */
 UI_SMALL static int st_save3(uint32_t obj, const void *src, uint32_t len, const void *src2, uint32_t len2, const void *src3,
@@ -180,8 +197,8 @@ UI_SMALL static int st_save3(uint32_t obj, const void *src, uint32_t len, const 
     uint32_t seq, base, off;
     int cur, rc;
     st_hdr_t h;
-    if (obj >= OBJ_COUNT || len + len2 + len3 > ST_PAYLOAD_MAX)
-        return -1;
+    if (obj >= OBJ_COUNT || len + len2 + len3 > (st_tail ? ST_TAIL_OFF - ST_PAYLOAD_OFF : ST_PAYLOAD_MAX))
+        return -1;                                    /* (the tail's length: its writer's _Static_assert, upreset.c) */
     cur = st_current(obj, &h);
     seq = cur < 0 ? 0u : h.seq;
     base = st_sector(obj, cur == 0 ? 1u : 0u);       /* write the other copy */
@@ -195,11 +212,8 @@ UI_SMALL static int st_save3(uint32_t obj, const void *src, uint32_t len, const 
     len += len3;
     if ((rc = st_erase(base)) != 0)
         return rc;
-    for (off = 0; off < len; off += 256u) {
-        uint32_t n = len - off > 256u ? 256u : len - off;
-        if ((rc = st_prog(base + ST_PAYLOAD_OFF + off, st_buf + off, n)) != 0)
-            return rc;
-    }
+    if ((rc = st_prog_n(base + ST_PAYLOAD_OFF, st_buf, len)) != 0)
+        return rc;
     if (st_side && st_side_len && st_side_len <= ST_SIDE_MAX) {   /* (2.7) the side record, before the commit */
         uint8_t sb[ST_SIDE_MAX];
         for (off = 0; off < st_side_len; off++)
@@ -207,6 +221,9 @@ UI_SMALL static int st_save3(uint32_t obj, const void *src, uint32_t len, const 
         if ((rc = st_prog(base + ST_SIDE_OFF, sb, st_side_len)) != 0)
             return rc;
     }
+    if (st_tail && (rc = st_prog_n(base + ST_TAIL_OFF, st_tail, st_tail_len)) != 0)   /* (KNOB MACROS) the tail, before
+                                                                                          * the commit */
+        return rc;
     h.magic = ST_MAGIC;
     h.type = (uint16_t)obj;
     h.slot = (uint16_t)(cur == 0 ? 1 : 0);

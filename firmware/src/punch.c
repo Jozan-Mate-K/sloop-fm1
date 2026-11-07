@@ -82,6 +82,13 @@ static struct {
     uint8_t wold;                     /* what cell wcell held before the gesture filled it on entering */
     int32_t wcell;                    /* that cell (-1 none): put back if the gesture ends early in it */
 } fxa = {.last_cell = -1, .gest = FXA_NONE, .wcell = -1};
+/* KNOB MACROS (fx.c kmac_*): a section's go with it as its lane does, through the four calls below (so the saves, the
+ * loads, the song and its keep all carry them): a target as its MIDI LEARN code (seq.c ml_code; 0 none: P_E0 moves
+ * when common parameters are added), its amount. Not the positions: a section played keeps them (seq.c kmac_get) */
+typedef struct { kmac_rec_t t[NTRK]; } kmac_tab_t;   /* (core.h kmac_rec_t a track's) */
+static kmac_tab_t kmac_slot[4], kmac_keep;          /* zero: no macro (not .noinit: project.c reads them at boot) */
+static void kmac_put(kmac_tab_t *m);
+static void kmac_get(const kmac_tab_t *m);
 
 static int32_t punch_want(void) { return punch.clear ? -1 : punch.req; }   /* the effect to play: the flush wins */
 
@@ -108,6 +115,7 @@ static void fxa_recall(uint32_t s)
     if (fxa.on)
         memcpy(fx_live, fx_slot[s], FXA_MAX);
     fxa_reset();
+    kmac_get(&kmac_slot[s]);
 }
 /* the working lane into section s (stored, saved). IRQ off: the ISR writes the working lane */
 static void fxa_store(uint32_t s)
@@ -119,17 +127,26 @@ static void fxa_store(uint32_t s)
     } else {
         fxa.slot_on &= (uint8_t)~(1u << s);
     }
+    kmac_put(&kmac_slot[s]);
+}
+/* section s without a lane nor KNOB MACROS (erased, restored, read without them; IRQ off or the ISR's section not s) */
+static void fxa_drop(uint32_t s)
+{
+    fxa.slot_on &= (uint8_t)~(1u << s);
+    memset(&kmac_slot[s], 0, sizeof kmac_slot[s]);
 }
 static void fxa_keep(void)                /* song mode: the working lane aside (audio ISR: seq_start) */
 {
     memcpy(fx_keep, fx_live, FXA_MAX);
     fxa.keep_on = fxa.on;
+    kmac_put(&kmac_keep);
 }
 static void fxa_unkeep(void)              /* and back (audio ISR: seq_stop) */
 {
     memcpy(fx_live, fx_keep, FXA_MAX);
     fxa.on = fxa.keep_on;
     fxa_reset();
+    kmac_get(&kmac_keep);
 }
 
 static int px_loop(int32_t fx) { return fx <= PX_STUT || fx == PX_LOOP8T; }   /* on the grid */

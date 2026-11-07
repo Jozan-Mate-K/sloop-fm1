@@ -65,6 +65,49 @@ UI_SMALL static int up_bank_ok(const up_bank_t *bk, int len)   /* a bank of this
     return len == (int)sizeof *bk && bk->magic == UP_BANK_MAGIC && bk->rsize == sizeof(up_rec_t) &&
            bk->nslot == UP_PER_BANK;
 }
+/* KNOB MACROS (fx.c kmac_*): a bank's 16 slots' macros in a tail record after its payload, in its own sector (storage.c
+ * st_tail, ST_TAIL_OFF): the payload stays 3080 B, so an older SLOOP reads the bank as ever; its save erases the
+ * sector, and the macros go (the presets stay), as does the editor's raw bank restore (the payload only). A slot's 8
+ * targets as MIDI LEARN codes (seq.c ml_code, 0 none: P_E0 moves), then its 8 amounts; checked at the load
+ * (seq.c kmac_in). No tail, a bad magic or CRC: no macros in that bank */
+#define UP_TAIL_MAGIC 0x314D5055u                /* "UPM1" */
+typedef struct {
+    uint32_t magic;
+    kmac_rec_t s[UP_PER_BANK];
+    uint32_t crc;                                /* st_crc32 of the bytes before it */
+} up_tail_t;
+_Static_assert(sizeof(up_tail_t) == 264u && ST_PAYLOAD_OFF + sizeof(up_bank_t) <= ST_TAIL_OFF &&
+               ST_TAIL_OFF + sizeof(up_tail_t) <= ST_SECTOR, "user preset bank tail");
+UI_SMALL static const up_tail_t *up_tail_ok(const up_tail_t *t)
+{
+    return t && t->magic == UP_TAIL_MAGIC && t->crc == st_crc32(t, sizeof *t - 4u) ? t : 0;
+}
+#ifdef UP_HOST
+static up_tail_t up_tail[UP_SLOTS / UP_PER_BANK];   /* (the RAM model: the test reads the tails in) */
+UI_SMALL static const up_tail_t *up_tail_of(uint32_t b) { return up_tail_ok(&up_tail[b % NELEM(up_tail)]); }
+#else
+UI_SMALL static const up_tail_t *up_tail_of(uint32_t b)   /* bank b's tail, in the window after its payload: 0 none */
+{
+    const up_bank_t *bk = up_bank_xip[b % NELEM(up_bank_xip)];
+    return up_tail_ok(bk ? (const up_tail_t *)((const uint8_t *)bk + (ST_TAIL_OFF - ST_PAYLOAD_OFF)) : 0);
+}
+#endif
+/* *t = the tail for a write of slot k: the bank's other slots' macros as they are, slot k's m (0: none) */
+UI_SMALL static void up_tail_make(up_tail_t *t, uint32_t k, const kmac_rec_t *m)
+{
+    const up_tail_t *cur = up_tail_of(k / UP_PER_BANK);
+    if (cur)
+        memcpy(t, cur, sizeof *t);
+    else
+        memset(t, 0, sizeof *t);
+    if (m)
+        t->s[k % UP_PER_BANK] = *m;
+    else
+        memset(&t->s[k % UP_PER_BANK], 0, sizeof(kmac_rec_t));
+    t->magic = UP_TAIL_MAGIC;
+    t->crc = st_crc32(t, sizeof *t - 4u);
+}
+
 #ifdef UP_HOST
 UI_SMALL static void up_bank_check(uint32_t b, int len)  /* after loading bank b (len bytes, -1 = none): wrong shape -> empty */
 {
@@ -215,12 +258,14 @@ UI_SMALL static void up_boot(void)                      /* persist_boot: the ban
         up_bank_find(b);
 }
 
-/* record k = *r (0: erase), then the bank to flash: 0 ok, 2 flash error, 3 no flash (nothing kept: there is no
- * RAM mirror). The bank is staged in the project buffer: its current copy, or an empty one, with the record put */
-UI_SMALL static int up_put(uint32_t k, const up_rec_t *r)
+/* record k = *r (0: erase) with the KNOB MACROS m (0: none), then the bank to flash: 0 ok, 2 flash error, 3 no flash
+ * (nothing kept: there is no RAM mirror). The bank is staged in the project buffer: its current copy, or an empty one,
+ * with the record put; after it the tail (the other slots' macros as they are) */
+UI_SMALL static int up_put(uint32_t k, const up_rec_t *r, const kmac_rec_t *m)
 {
     uint32_t b = (k / UP_PER_BANK) % NELEM(up_bank_xip), i;
     up_bank_t *bk = (up_bank_t *)up_stage();
+    up_tail_t *tl = (up_tail_t *)(bk + 1);
     int rc = 3;
     if (up_bank_xip[b])
         memcpy(bk, up_bank_xip[b], sizeof *bk);
@@ -237,10 +282,16 @@ UI_SMALL static int up_put(uint32_t k, const up_rec_t *r)
         for (i = 0; i < NTRK; i++)
             if (trk[i].user == k + 1u)
                 trk[i].user = 0;
+    up_tail_make(tl, k, m);
     up_gen++;
 #if FELUCCA_FLASH
-    if (flash_ok)
+    if (flash_ok) {
+        st_tail = tl;
+        st_tail_len = sizeof *tl;
         rc = st_save(OBJ_UPRESET0 + b, bk, sizeof *bk) ? 2 : 0;
+        st_tail = 0;
+        st_tail_len = 0;
+    }
 #endif
     up_bank_find(b);
     return rc;
@@ -254,12 +305,36 @@ UI_SMALL static void up_slot_label(char *b, uint32_t k)  /* "U07" */
     b[3] = 0;
 }
 
+/* slot k's automatic name: the selected part's engine + the slot number ("ANALOG 07"; b: 12 + 1 bytes at least) */
+UI_SMALL static void up_auto_name(char *b, uint32_t k)
+{
+    char l[4];
+    str_cpy(b, ENGINES[TSEL->eng_req]->name, 9);
+    up_slot_label(l, k);
+    str_cpy(b + str_len(b), " ", 2);
+    str_cpy(b + str_len(b), l + 1, 3);
+}
+
+/* a SAVE (snd: the selected part's sound; 0: an ERASE) possible now? Else why, in the top bar */
+UI_SMALL static int up_can_save(int snd)
+{
+    if (snd && is_drum(TSEL))
+        ui_message("DRUM TRACK: NO SOUND");
+    else if (song.playing || transport_req)            /* a flash erase stops the audio ~50 ms */
+        ui_message("STOP BEFORE SAVE");
+    else
+        return 1;
+    return 0;
+}
+
 /* the selected part's sound -> slot k; name 0 or "": engine name + slot number ("ANALOG 07").
  * 1 = the drum track is selected (it has no sound to store) */
 UI_SMALL static int up_store(uint32_t k, const char *name)
 {
     up_rec_t r;
+    kmac_rec_t m;
     uint32_t i;
+    char b[16];
     if (is_drum(TSEL))
         return 1;
     memset(&r, 0, sizeof r);
@@ -267,24 +342,28 @@ UI_SMALL static int up_store(uint32_t k, const char *name)
     r.ver = UP_VER;
     r.engine = TSEL->eng_req;
     r.np = P_COUNT;
-    if (name && name[0]) {
-        for (i = 0; i < 12u && name[i]; i++)
-            r.name[i] = name[i];
-    } else {
-        char b[16], l[4];
-        str_cpy(b, ENGINES[TSEL->eng_req]->name, 9);
-        up_slot_label(l, k);
-        str_cpy(b + str_len(b), " ", 2);
-        str_cpy(b + str_len(b), l + 1, 3);
-        for (i = 0; i < 12u && b[i]; i++)
-            r.name[i] = b[i];
+    if (!name || !name[0]) {
+        up_auto_name(b, k);
+        name = b;
     }
+    for (i = 0; i < 12u && name[i]; i++)
+        r.name[i] = name[i];
     for (i = 0; i < P_COUNT; i++)
         r.p[i] = TSEL->p[i];
     up_pat_from(&r, TSEL->step);
-    return up_put(k, &r);
+    kmac_out(trk_index(TSEL), &m);                /* its KNOB MACROS (not their positions) */
+    return up_put(k, &r, &m);
 }
 
+/* user preset k's KNOB MACROS from its bank's tail tl (up_tail_of, looked up before the IRQ-off section: a CRC over
+ * the tail) onto track ti (its engine and values just written: each target checked on it; the IRQ off, kmac_clear and
+ * kmac_in toggle none), the positions at 0. A bank without its tail (tl 0): none */
+UI_SMALL static void up_kmac_take(uint32_t ti, uint32_t k, const up_tail_t *tl)
+{
+    kmac_clear(ti);
+    if (tl)
+        kmac_in(ti, &tl->s[k % UP_PER_BANK]);
+}
 /* slot k -> the selected part's sound: engine and every parameter except its mix (LEVEL,
  * PAN, MUTE: the TRACKS faders) and its pattern parameters (param_kept). LIVE: the pattern
  * stored in the record is not loaded: changing the sound never changes the sequence.
@@ -292,11 +371,13 @@ UI_SMALL static int up_store(uint32_t k, const char *name)
 UI_SMALL static int up_load_to(track_t *t, uint32_t k)       /* user preset k into track t (2.6: any track, MIDI PC) */
 {
     const up_rec_t *r;
+    const up_tail_t *tl;
     int16_t v[P_COUNT];
     uint32_t i;
     int keep_arp;
     if (!up_used(k) || is_drum(t))
         return 1;
+    tl = up_tail_of(k / UP_PER_BANK);                  /* (its macros: the tail checked now, not with the IRQ off) */
     keep_arp = t->p[P_AMODE] && !arp_is_sounds(t);     /* (2.7.1: not the arp the old sound brought) */
     r = up_rec(k);
     up_values(r, v);
@@ -316,6 +397,7 @@ UI_SMALL static int up_load_to(track_t *t, uint32_t k)       /* user preset k in
     for (i = 0; i < P_COUNT; i++)
         t->p[i] = v[i];
     t->preset = 0;
+    up_kmac_take(trk_index(t), k, tl);
     fm1_irq_on();
     fm6_track_loaded(t);                                /* FM6: a user preset holds the PTCH and the macros */
     t->user = (uint8_t)(k + 1u);
@@ -357,7 +439,7 @@ UI_SMALL static void up_ui(uint32_t op, uint32_t k)     /* 0 load, 1 erase, 2 sa
     char l[4];
     int rc;
     up_slot_label(l, k);
-    if (op != 1u && is_drum(TSEL)) {
+    if (op == 0u && is_drum(TSEL)) {
         ui_message("DRUM TRACK: NO SOUND");
         return;
     }
@@ -370,11 +452,9 @@ UI_SMALL static void up_ui(uint32_t op, uint32_t k)     /* 0 load, 1 erase, 2 sa
         ui_say("LOADED ", l);
         return;
     }
-    if (song.playing || transport_req) {               /* a flash erase stops the audio ~50 ms */
-        ui_message("STOP BEFORE SAVE");
+    if (!up_can_save(op == 2u))
         return;
-    }
-    rc = op == 1u ? up_put(k, 0) : up_store(k, 0);
+    rc = op == 1u ? up_put(k, 0, 0) : up_store(k, nm_trim(ui.nm));   /* (the name edited, "" automatic) */
     if (rc == 3)
         ui_message("NO FLASH");                        /* (no RAM mirror to keep it in) */
     else if (rc)

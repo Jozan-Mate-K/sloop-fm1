@@ -211,6 +211,54 @@ int main(void)
         up_pat_from(&r, st);
         bad += check("empty sequencer -> empty pattern", up_pat_empty(&r));
     }
+    {   /* KNOB MACROS: the bank's tail (up_tail_t at ST_TAIL_OFF; the RAM model up_tail[] read from the copy) */
+        up_tail_t tl;
+        kmac_rec_t m, m2;
+        uint32_t c;
+        st_hdr_t h;
+        memset(&m, 0, sizeof m);
+        m.c[0] = 3, m.a[0] = -64, m.c[7] = 120, m.a[7] = 63;
+        memset(&m2, 0, sizeof m2);
+        m2.c[1] = 9, m2.a[1] = 20;
+        bad += check("tail: payload stays 3080 B, tail 264 B", sizeof(up_bank_t) == 3080u && sizeof(up_tail_t) == 264u);
+        memset(up_tail, 0xFF, sizeof up_tail);               /* (as erased flash) */
+        bad += check("tail: an old bank (none) has no macros", !up_tail_of(1));
+        up_tail_make(&tl, 17, &m);
+        st_tail = &tl;
+        st_tail_len = sizeof tl;
+        bad += check("tail: bank saved with it", st_save(OBJ_UPRESET0 + 1, &up_bank[1], sizeof up_bank[1]) == 0);
+        st_tail = 0;
+        st_tail_len = 0;
+        c = (uint32_t)st_current(OBJ_UPRESET0 + 1, &h);
+        st_read(st_sector(OBJ_UPRESET0 + 1, c) + ST_TAIL_OFF, &up_tail[1], sizeof up_tail[1]);
+        bad += check("tail: read back, slot 17's macros", up_tail_of(1) && !memcmp(&up_tail_of(1)->s[1], &m, sizeof m));
+        up_tail_make(&tl, 20, &m2);                          /* store slot 20: 17 kept */
+        bad += check("tail: a store keeps the other slots' macros",
+                     !memcmp(&tl.s[1], &m, sizeof m) && !memcmp(&tl.s[4], &m2, sizeof m2) && up_tail_ok(&tl));
+        up_tail[1] = tl;
+        up_tail_make(&tl, 17, 0);                            /* erase / UP_PUT slot 17: cleared, 20 kept */
+        memset(&m, 0, sizeof m);
+        bad += check("tail: erase clears that slot only",
+                     !memcmp(&tl.s[1], &m, sizeof m) && !memcmp(&tl.s[4], &m2, sizeof m2) && up_tail_ok(&tl));
+        up_tail[1] = tl;
+        up_tail[1].s[4].a[1] ^= 1;                           /* bit rot */
+        bad += check("tail: a corrupt one ignored (no macros)", !up_tail_of(1));
+        up_tail[1] = tl;
+        up_tail[1].magic ^= 0x100u;
+        bad += check("tail: another magic ignored", !up_tail_of(1));
+        up_tail_make(&tl, 0, &m2);                           /* bank 0 without a tail: an empty one, slot 0 set */
+        bad += check("tail: none before -> the other slots empty",
+                     !memcmp(&tl.s[0], &m2, sizeof m2) && !memcmp(&tl.s[1], &m, sizeof m) && up_tail_ok(&tl));
+        /* an older SLOOP saves the bank (no tail): the presets stay, the macros go */
+        bad += check("tail: an old save of the bank", st_save(OBJ_UPRESET0 + 1, &up_bank[1], sizeof up_bank[1]) == 0);
+        c = (uint32_t)st_current(OBJ_UPRESET0 + 1, &h);
+        st_read(st_sector(OBJ_UPRESET0 + 1, c) + ST_TAIL_OFF, &up_tail[1], sizeof up_tail[1]);
+        memset(up_bank, 0, sizeof up_bank);
+        len = st_load(OBJ_UPRESET0 + 1, &up_bank[1], sizeof up_bank[1]);
+        up_bank_check(1, len);
+        bad += check("tail: ... presets kept, macros dropped", len == (int)sizeof(up_bank_t) && !up_tail_of(1) &&
+                                                                   up_bank[1].magic == UP_BANK_MAGIC);
+    }
     printf("%s\n", bad ? "USER PRESET TEST FAILED" : "user preset test passed");
     return bad != 0;
 }

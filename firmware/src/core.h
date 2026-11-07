@@ -11,6 +11,9 @@
 #define NPART 3                  /* synth parts: tracks 1..3 */
 #define NTRK 4                   /* + the drum track */
 #define TRK_DRUM 3
+#define KM_N 4                   /* KNOB MACROS per track (fx.c kmac_*; engine_t.macro[] are HOME's knobs) */
+typedef struct { uint8_t c[KM_N * 2]; int8_t a[KM_N * 2]; } kmac_rec_t;   /* a track's macro targets kept ([k * 2 + s]):
+                                 * MIDI LEARN codes (seq.c kmac_out), amounts; a section's, a user preset's (upreset.c) */
 enum { V_POLY, V_MONO, V_LEGATO, V_UNISON };   /* P_VOICE */
 #define NSTEP 64
 #define HALF_FRAMES 256          /* I2S half buffer: 5.8 ms at 44.1 kHz */

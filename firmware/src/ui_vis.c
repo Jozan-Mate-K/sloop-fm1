@@ -1,16 +1,17 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
 /* SLOOP 2.4: the full-screen visualiser. On HOME (the TRACKS screen), HOME tapped opens it; HOME again or
- * any page closes it; SELECT steps through the twelve styles (the name shows a second); a layer held shows
- * its screen as ever, then the visualiser comes back. The keys, PLAY and REC work as always.
+ * any page closes it; SELECT steps through the thirteen styles (the name shows a second); a layer held shows
+ * its screen as ever, then the visualiser comes back. The keys, PLAY and REC work as always; KNOB 1..4 play the
+ * selected track's macros (fx.c kmac_*, set on EDIT > MACRO 1..4), whose colour the bottom right corner shows.
  *   1 OSCILLOSCOPE  2 SPECTRUM  3 SPECTROGRAM  4 LISSAJOUS  5 VU METERS  6 CIRCLE
- *   7 TAPE  8 LCD  9 BOUNCE  10 ORBIT  11 WIRES  12 SLOOP (the logo: the sail's bands are the tracks)
+ *   7 TAPE  8 LCD  9 BOUNCE  10 ORBIT  11 WIRES  12 SLOOP (the logo: the sail's bands are the tracks)  13 MACROS
  * It reads what the audio already leaves for the UI: the scope buffers (audio.c, the mix at 22 kHz, left and
  * right, as if MASTER were all the way up: the picture does not follow the volume knob, even at 0), the tracks' peaks (fx.c / drums.c, as the TRACKS meters read them), the notes that started
  * (voice.c vis_hit) and the transport clock. Everything is drawn in the main loop, every other frame, in two
  * bands of 120 rows (the canvas holds 124): no cost to the audio. */
-#define VIS_N 12u
+#define VIS_N 13u
 static const char *const VIS_NAME[VIS_N] = {"OSCILLOSCOPE", "SPECTRUM", "SPECTROGRAM", "LISSAJOUS", "VU METERS",
-                                            "CIRCLE", "TAPE", "LCD", "BOUNCE", "ORBIT", "WIRES", "SLOOP"};
+                                            "CIRCLE", "TAPE", "LCD", "BOUNCE", "ORBIT", "WIRES", "SLOOP", "MACROS"};
 /* vis_on, vis_shown_last, vis_name_t: ui_draw.c; vis_style: panel.c (kept with the settings) */
 #define VIS_FFT 512u
 #define VIS_SG_W 48u                                /* spectrogram: 48 columns of 5 px, 72 rows of 3 px */
@@ -599,6 +600,80 @@ static void vis_sloop(void)
     }
 }
 
+/* MACROS: the selected track's four macros, a block each: M1 and its position (0..100 %), then its two targets (--:
+ * none), each amount from the centre tick (left: down): its reach dim, what it adds now (x the position) lit */
+UI_SMALL static void vis_span(int32_t a, int32_t b, int32_t y, int32_t h, uint16_t c)   /* a .. b, either way round */
+{
+    cv_rect(a < b ? a : b, y, a < b ? b - a : a - b, h, c);
+}
+UI_SMALL static int kmac_used(uint32_t t, uint32_t k)   /* macro k of track t has a target */
+{
+    return kmac_id[t][k * 2u] < P_COUNT || kmac_id[t][k * 2u + 1u] < P_COUNT;
+}
+UI_SMALL static void kmac_pct(char *b, int32_t pos)      /* a position 0..127 as "64%" (F_PCT, as DLY's) */
+{
+    const char *u;
+    param_format(&TP[P_DLY], pos, b, &u);
+    str_cpy(b + str_len(b), u, 4);
+}
+UI_SMALL static void vis_macros(void)
+{
+    uint32_t t = song.sel % NTRK, k, s;
+    uint16_t col = TE_COL[t];
+    const char *u;
+    char b[12];
+    for (k = 0; k < KM_N; k++) {
+        int32_t y = 22 + (int32_t)k * 52, pos = kmac_pos[t][k];
+        int on = kmac_used(t, k);
+        if ((uint32_t)(y + cv_oy + 50) >= 170u)
+            continue;                                   /* (a block, 50 rows, wholly out of this 120-row band) */
+        b[0] = 'M', b[1] = (char)('1' + k), b[2] = 0;
+        cv_text(4, y, &FONT_S, b, on ? col : C_DIM);
+        cv_rect(74, y + 7, 96, 2, C_LINE);
+        cv_rect(74, y + 5, pos * 96 / 127, 6, on ? col : C_DIM);
+        kmac_pct(b, pos);
+        cv_text(232 - text_w(&FONT_S, b), y, &FONT_S, b, on ? C_HI : C_DIM);
+        for (s = 0; s < 2u; s++) {
+            int32_t yy = y + 17 + (int32_t)s * 16, a = kmac_amt[t][k * 2u + s] * 3 / 4, id = kmac_id[t][k * 2u + s];
+            cv_rect(122, yy + 2, 1, 12, C_GRAY);
+            if (id >= P_COUNT) {
+                cv_text(12, yy, &FONT_S, "--", C_DIM);
+                continue;
+            }
+            cv_text(12, yy, &FONT_S, kmac_label(TSEL, (uint32_t)id), C_GRAY);
+            vis_span(122, 122 + a, yy + 4, 8, TE_DIM[t]);              /* the reach */
+            vis_span(122, 122 + a * pos / 127, yy + 4, 8, col);        /* now */
+            param_format(&TP[P_PAN], kmac_amt[t][k * 2u + s], b, &u);   /* (F_BIPCT -64..63) */
+            str_cpy(b + str_len(b), u, 4);
+            cv_text(232 - text_w(&FONT_S, b), yy, &FONT_S, b, C_HI);
+        }
+    }
+}
+/* the selected track: a corner in its colour, bottom right, on black (the SLOOP sea, its crest track 1's colour) */
+UI_SMALL static void vis_corner(void)
+{
+    cv_rect(176, 233, 64, 7, C_BLACK);
+    cv_rect(233, 176, 7, 64, C_BLACK);
+    cv_rect(180, 237, 60, 3, TE_COL[song.sel % NTRK]);
+    cv_rect(237, 180, 3, 60, TE_COL[song.sel % NTRK]);
+}
+/* KNOB k on the visualiser: macro k of the selected track (fx.c kmac_*), its position in the banner; none set there:
+ * says so, moves nothing */
+UI_SMALL static void vis_knob(uint32_t k, int32_t s)
+{
+    uint32_t t = song.sel % NTRK;
+    char b[12] = "M1 ";
+    k &= 3u;
+    b[1] = (char)('1' + k);
+    if (!kmac_used(t, k)) {
+        str_cpy(b + 3, "OFF", 4);
+    } else {
+        kmac_pos_set(t, k, kmac_pos[t][k] + accel(EN_K1 + k, s, 127));
+        kmac_pct(b + 3, kmac_pos[t][k]);
+    }
+    ui_message(b);                                      /* (the banner: no ui.force, no black frame) */
+}
+
 /* the visualiser, every other frame: the update, then both bands */
 static void vis_draw(void)
 {
@@ -625,7 +700,8 @@ static void vis_draw(void)
         case 8: vis_bounce(); break;
         case 9: vis_orbit(); break;
         case 10: vis_wires(); break;
-        default: vis_sloop(); break;
+        case 11: vis_sloop(); break;
+        default: vis_macros(); break;
         }
         if (!pass && (vis_name_t || ui.msg_t)) {    /* the style's name a second (or a message) */
             char n[8];
@@ -634,10 +710,11 @@ static void vis_draw(void)
             cv_text(120 - text_w(&FONT_S, s) / 2, 2, &FONT_S, s, C_WHITE);
             if (!ui.msg_t) {
                 fmt_int(n, (int32_t)(vis_style % VIS_N) + 1);
-                str_cpy(n + str_len(n), "/12", 4);
+                str_cpy(n + str_len(n), "/13", 4);
                 cv_text(4, 2, &FONT_S, n, C_DIM);
             }
         }
+        vis_corner();
         cv_oy = 0;
         cv_blit(0, pass * 120u);
     }
