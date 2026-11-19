@@ -67,6 +67,8 @@ The 11 black keys are F#3, G#3, A#3, C#4, D#4, F#4, G#4, A#4, C#5, D#5, F#5. The
 
 3,000 of you now follow SLOOP — thank you. 2.8 is a deeper way to write and shape your music, and most of it comes from your comments and reports. Each item points to its full write-up below.
 
+- **New since 2.8.5: knob macros.** Each track has four macros; each moves up to two sound parameters at once, by an amount up or down (± %, as on ENV DEST and LFO DEST). Set them on **EDIT → MACRO 1–4** (after VOICE 2), play them with **KNOB 1–4 on the visualiser** (where the knobs did nothing). They add to your values and overwrite none; their positions stay when you leave. A corner in the selected track's colour shows whose macros the knobs play, and a 13th visualiser style, **MACROS**, shows them all. They are kept in user presets and in the project; a factory preset, INIT or another engine clears them. See [Knob macros](#knob-macros).
+- **New since 2.8.5: name your user presets on the FM-1.** SAVE → USER → SAVE opens the name: KNOB 1 the position, KNOB 2 the letter (A–Z, 0–9, a blank), KNOB 4 saves, KNOB 3 goes back. A track playing a user preset keeps its name after a power-off (it read *808 BOOM* before). See [Name a user preset](#name-a-preset).
 - **A NOTES editor: a piano roll for the synth tracks.** Tap **SEQ** on a synth track for the pattern as a piano roll, and write and edit notes step by step: KNOB 1 the notes (a chord's one by one), KNOB 2 the pitch, KNOB 3 the length, KNOB 4 the force; PRESETS zooms, EDIT deletes. Hold **OCT+** on a step for its **sheet** — SLIDE, NUDGE, FILL, MOVE, COPY, DELETE. See [The step sequencer](#10-the-step-sequencer-steps-nudge-locks-fills).
 - **The same per-step sheet on the DRUMS grid.** Hold **OCT+** on a drum step for RATCHET, NUDGE, FILL, MOVE, COPY, DELETE — the groove, shaped step by step. See [The step sequencer](#10-the-step-sequencer-steps-nudge-locks-fills).
 - **The playing section on the main screen.** The TRACKS screen shows which section — **A to D** — is playing, in its own colour. See [The screens](#15-the-screens).
@@ -173,10 +175,10 @@ The layers are **FX** (punch-in effects), **EDIT** (erase), **ARP** (note repeat
 | **SAVE** | on TRACKS or DRUMS: the **SONG** screen · on the SONG screen: save the song · elsewhere: the **SAVE pages** | the **song layer** (sections A–D, chain, song mode, SONG REC) |
 | **HOME** | the **TRACKS** screen · on TRACKS: the **visualiser** (HOME again closes it) | 0.7 s: the **menu** (SCREEN, LIGHTS, AUDIO, SYSTEM); hold again to leave it |
 | **ENV** | ENV pages (ENV, ENV DEST) | — |
-| **LFO** | LFO pages (LFO, LFO DEST) | — |
+| **LFO** | LFO pages (LFO, LFO 2, LFO DEST) | — |
 | **FX** | FX pages (FX, FILTER, SLICER, DLY, REV/CHO) | punch-in layer |
 | **SEL** | SEL pages (SEL, SEL 2) | key / chord layer |
-| **EDIT** | EDIT pages (EDIT 1, EDIT 2, VOICE, VOICE 2) · on TRACKS with the drum track: the **DRUMS** screen · on DRUMS: grid ↔ kit · on the NOTES page: delete the note | erase layer |
+| **EDIT** | EDIT pages (EDIT 1, EDIT 2, VOICE, VOICE 2, MACRO 1–4; the drum track: MACRO 1–4 only) · on TRACKS with the drum track: the **DRUMS** screen · on DRUMS: grid ↔ kit · on the NOTES page: delete the note | erase layer |
 | **ARP** | ARP pages (ARP, ARP 2) | note-repeat layer |
 | **SEQ** | SEQ pages (STEP, PATTERN, SONG) · with the drum track: the **DRUMS** screen (2.7.1: from any page; it opened STEP from ARP's) · on DRUMS: grid ↔ kit | step layer |
 | **GLO** | GLO pages (GLOBAL, MASTER, SYSTEM, DRUMS) | mix layer |
@@ -184,7 +186,7 @@ The layers are **FX** (punch-in effects), **EDIT** (erase), **ARP** (note repeat
 | **ALGORITHM** | select track 1–4, on every screen (inside a layer it waits; not during a free take, on the SONG screen or in the menu) | — |
 | **PRESETS** | on TRACKS, HOME and the PRESETS page: the selected track's **sound** (your favourites first (2.7), then all factory sounds by kind, then your user presets) · drum track: the **kit** · on the DRUMS screen: the kit | — |
 | **SELECT** | on TRACKS, inside a layer and on the REC screen: the **tempo** · on a page: previous / next page of its button (stops at the ends) · DRUMS screen: grid ↔ kit · visualiser: the style · menu: the section | — |
-| **KNOB 1–4** | the four dials at the bottom of the screen | — |
+| **KNOB 1–4** | the four dials at the bottom of the screen · visualiser: the selected track's [knob macros](#knob-macros) | — |
 | **MASTER** | output volume (the visualiser ignores it) | — |
 
 ### Combinations at power-on and while stopped
@@ -613,8 +615,8 @@ A muted track fades out in a few milliseconds and plays no new notes; its patter
 | **New loop** | SAVE → TOOLS → **NEW** (GO): the four tracks of your working loop back to their power-on sounds, empty patterns, 90 BPM (*NEW LOOP, A-D KEPT*: the saved sections are not touched; stop the song first in song mode; undo brings back only the last track's pattern, so save a section first if in doubt) |
 | **Save the loop as a section** | **SAVE + key 5–8** (A–D) |
 | **Save / load a section** | SAVE → SECTION: **SECT** A–D, **LOAD** (GO), **SAVE** (GO) |
-| **Erase a saved section** (2.6) | SAVE → SECTION: **SECT** A–D, **ERASE** on KNOB 2 (GO), the song stopped: the slot is *EMPTY* again and its section key goes dark. The steps of the song that played it are taken out (the others keep their order; none left: the default song A B C D). Your working loop is not touched. No undo: save it into another slot first if in doubt |
-| **Save a sound** | SAVE → USER: **SLOT** (1–32), **SAVE** (GO) |
+| **Erase a saved section** (2.6) | SAVE → SECTION: **SECT** A–D, **ERASE** on KNOB 3 (GO; KNOB 2 before, now LOAD as on USER), the song stopped: the slot is *EMPTY* again and its section key goes dark. The steps of the song that played it are taken out (the others keep their order; none left: the default song A B C D). Your working loop is not touched. No undo: save it into another slot first if in doubt |
+| **Save a sound** | SAVE → USER: **SLOT** (1–32), **SAVE**, [name it](#name-a-preset), **SAVE** again |
 | **Autosave** | automatic: when the transport is stopped and you have not touched anything for 2.5 s (at most every 20 s), the working project is kept in flash; at power-on SLOOP comes back exactly as you left it |
 
 **One song on the FM-1.** The FM-1 holds one song: **four sections, A–D**, and the order they play in (the SONG screen). A **section** is a loop: the four tracks (sounds, patterns, kit, locks, nudges, fill conditions, the track filter) and the global settings of the loop (tempo, swing, key…). Your **working loop** (what plays in loop mode, kept by the autosave) is apart from them: LOAD copies a section into it, SAVE copies it into a section. A–D are not four songs. **To keep several songs**, save an editor **Backup** file per song (Song & sections tab) and restore the one you want to play. (Before 2.7 the SAVE page was called PROJECT, its slots 1–4: the same four sections.)
@@ -626,13 +628,15 @@ A muted track fades out in a few milliseconds and plays no new notes; its patter
 | Page | KNOB 1 | KNOB 2 | KNOB 3 | KNOB 4 |
 | --- | --- | --- | --- | --- |
 | **PRESETS** | the sound (your favourites, then factory by kind, then user presets) | the engine (next / previous) | — | **FAV** (2.7): right adds the sound to your favourites, left removes it |
-| **USER** | **SLOT** 1–32 | **LOAD** (GO) | **ERASE** (GO) | **SAVE** (GO) |
-| **SECTION** | **SECT** A–D | **ERASE** (GO, 2.6) | **LOAD** (GO) | **SAVE** (GO) |
+| **USER** | **SLOT** 1–32 | **LOAD** (GO) | **ERASE** (GO) | **SAVE**: [name it](#name-a-preset), then save |
+| **SECTION** | **SECT** A–D | **LOAD** (GO) | **ERASE** (GO, 2.6; KNOB 2 before, as on USER now) | **SAVE** (GO) |
 | **TOOLS** | **CLRSQ** (GO) | **INIT** (GO) | — | **NEW** (GO) |
 
 <a id="favourites"></a>**Favourites (2.7).** On the PRESETS page, turn KNOB 4 right: the sound is added to your favourites (*FAV ADDED*), up to 16, which come first in the PRESETS list, tagged FAV, in the order you added them; the PRESETS knob reaches them in a click or two from anywhere on TRACKS or HOME. KNOB 4 left removes it. A user preset can be a favourite too. They are a setting of the FM-1, kept through power-off (not in a project, and not in an editor backup). MIDI Program Change still counts the list without them.
 
 GO: one click shows *AGAIN: SAVE* (or LOAD…), a second click within about 1.5 s does it. Presets and sections are written to flash only while the song is stopped.
+
+<a id="name-a-preset"></a>**Name a user preset.** On SAVE → USER, pick the **SLOT** with KNOB 1 and turn **SAVE** (KNOB 4) one click: the slot's row becomes its name, 12 places, the one being changed underlined (*NAME IT, K4 SAVE*). It starts as the slot's name, or for an empty slot the automatic one (*ANALOG 07*). **KNOB 1** moves along the name (POS 1–12), **KNOB 2** changes the letter there: A–Z, 0–9 and a blank (shown _), round and round. **KNOB 4** one click saves it under that name (the blanks at the end are dropped; all blank: the automatic name); **KNOB 3** (BACK) or leaving the page saves nothing (*NOT SAVED*). A track playing a user preset shows its name again after a power-off or a section loaded.
 
 ---
 
@@ -675,7 +679,7 @@ The song's settings can only be edited while it is stopped (*STOP FIRST*). An em
 | Screen | How to get there | What it shows · what the knobs do |
 | --- | --- | --- |
 | **TRACKS** | tap **HOME** | the performance view: tempo, swing, transport, bar.beat; each track with its sound, steps, playhead, mute / solo / rec badges and level. **(2.8)** a coloured **A–D** badge by the title shows which section is playing. Dials: KNOB 1 **swing** (global) · KNOB 2 **level** (selected track; on a muted track: unmutes it) · KNOB 3 **steps** (its length) · KNOB 4 **pan** |
-| **Visualiser** | tap **HOME** on TRACKS | twelve full-screen visualisers; see [The visualiser](#19-the-visualiser) |
+| **Visualiser** | tap **HOME** on TRACKS | thirteen full-screen visualisers, KNOB 1–4 the [knob macros](#knob-macros); see [The visualiser](#19-the-visualiser) |
 | **Layer** | hold a layer button | 16 tiles (the white keys) and the four dials, in the layer's colour |
 | **DRUMS** (grid / kit) | tap **EDIT** or **SEQ** on TRACKS with the drum track | see [The DRUMS screen](#the-drums-screen) |
 | **REC READY / FREE TAKE / COUNT-IN** | **REC** while stopped | the tracks, then **mode · length · start · quant** on KNOB 1–4 (4-3-2-1 during a count-in); in a free take: the seconds and the loop it would make |
@@ -715,6 +719,7 @@ Tap a button to open its first page (or the last one you used); **tap it again**
 | | **FILTER** (ANALOG only, 2.6) | TYPE: LP, BP, HP | CUT cutoff | RES resonance | KTR key tracking |
 | | **VOICE** | VCE: POLY, MONO, LEG (legato), UNI (unison) | GLD glide | GLMOD: RATE / TIME | PRIO: LAST, LOW, HIGH (mono note priority) |
 | | **VOICE 2** | ALLOC: ROT (rotate) / REUSE | DTUNE (unison detune) | PAN | MUTE |
+| | **MACRO 1–4** | TGT 1: the macro's first parameter (*--*: none) | AMT 1: its amount, ± % | TGT 2: its second parameter | AMT 2: its amount (see [Knob macros](#knob-macros); the drum track too) |
 | **ARP** | **ARP** | MODE: OFF, UP, DN, UPDN, RND, ORD, and (2.7) REPEAT, DNUP, UP+8, CONV, DIVG, PINKY, THUMB, WALK, CHORD ([below](#arp-modes)) | RATE: 1/4 … 16T | OCT: 1–4 octaves | GATE |
 | | **ARP 2** | SWG swing (2.7: also with the sequencer stopped) | PROB probability of each note | HOLD: OFF / ON (latch; with MODE OFF, 2.7: [KBD HOLD](#kbd-hold)) | ORD: NOTE (pitch order) / PLAY (the order you played) |
 | **SEQ** | **STEP** | STEP (cursor) | NOTE | TIME: NOTE, TIE, REST · on a note: LEN (2.6) | FLAG: –, ACC, SLD, A+S |
@@ -730,21 +735,22 @@ Tap a button to open its first page (or the last one you used); **tap it again**
 | | **MIDI 2** (2.6) | IN: NOTES / CLOCK / CH 1–16 | OTHER: the channels no track has: SEL (the selected track) / OFF | OUT: KEYS / SEQ | BEND: the pitch bend's range, 1–12 semitones |
 | | **MIDI 3** (2.7) | FX CH: the punch-in effects' MIDI channel (OFF, 1–16) | DR MAP: how MIDI notes play the drums (GM / 1-16) | REMOTE: the buttons over MIDI (OFF, 1–16) | CLOCK: OUT, the MIDI clock and START / STOP out on USB (OFF / OUT) |
 | **SAVE** | **PRESETS** | the sound | the engine | — | — |
-| | **USER** | SLOT 1–32 | LOAD (GO) | ERASE (GO) | SAVE (GO) |
-| | **PROJECT** | SLOT 1–4 | ERASE (GO) | LOAD (GO) | SAVE (GO) |
+| | **USER** | SLOT 1–32 | LOAD (GO) | ERASE (GO) | SAVE: [name it](#name-a-preset), then save |
+| | **SECTION** (PROJECT before 2.7) | SECT A–D | LOAD (GO) | ERASE (GO; KNOB 2 before, as on USER now) | SAVE (GO) |
 | | **TOOLS** | CLRSQ: clear the pattern (GO) | INIT: reset the sound (GO) | — | NEW project (GO) |
 
 Notes:
 
 - **Global** pages (DLY, REV/CHO, GLOBAL, MASTER, SYSTEM, DRUMS) are the same whatever track is selected.
 - **SYNC**, **MIDI** and **IN** are settings of the FM-1, kept when you load a project.
-- On the **drum track**, the pages that work are SLICER, PATTERN (SEQ), the SONG screen and the global pages; its kit, level, reverb and pan are on the DRUMS kit page, and its filter is **FX + KNOB 4**.
+- On the **drum track**, the pages that work are SLICER, MACRO 1–4 (EDIT: from any page but TRACKS, EDIT opens MACRO 1; on TRACKS it opens the DRUMS screen), PATTERN (SEQ), the SONG screen and the global pages; its kit, level, reverb and pan are on the DRUMS kit page, and its filter is **FX + KNOB 4**.
 - FM6 tracks ignore the ENV page and ENV DEST (each operator has its own envelope).
 - <a id="arp-modes"></a>**ARP modes** (2.7, after Felucca 1.4 / 1.5.1). With C, E and G held: **UP** C E G · **DN** G E C · **UPDN** C E G E · **DNUP** G E C E · **RND** at random · **ORD** in the order you pressed them · **REPEAT** the last note you pressed, again and again (OCT ignored) · **UP+8** C E G C' (the first note again an octave above the top) · **CONV** C G E (from the outside in) · **DIVG** E G C (from the inside out) · **PINKY** C G E G (the top note between the others) · **THUMB** C E C G (the bottom note between the others) · **WALK** one step up or down at random, from the bottom · **CHORD** the held notes together (the first four), on every step, an octave higher each step through OCT. OCT spreads the list over 1–4 octaves; ARP 2 ORD PLAY keeps the order you played for the other modes. Until 2.6, ORD played as UP unless ARP 2 ORD was PLAY: now it always follows the order you pressed.
 - <a id="kbd-hold"></a>**KBD HOLD** (2.7): ARP 2 → **HOLD ON** with ARP → **MODE OFF** holds the notes you play, without an arpeggio: let go and they go on sounding (a pad, a drone, a chord to play over with one hand). The next note you play with no key down **replaces** them (a new chord); notes played while keys are still down **join** them. The keys' MIDI note-offs wait too, so gear played from the FM-1 holds with it. **HOLD OFF** (or ARP on, another project, NEW) ends them; loading another sound ends the held notes too, but HOLD stays ON. Projects saved before 2.7 open with HOLD OFF when their arp is OFF (it did nothing then), so nothing hangs by surprise. It works for MIDI notes too. Recorded as you hear it: a held note ends where it is replaced. Up to 2.6, HOLD did nothing with the arp OFF.
 - **ARP SWG** (2.7): the arp's swing also works with the sequencer stopped (the odd steps late), as it does while playing; until 2.6 it only worked while playing.
 - **ARP and sounds** (2.7): while the arpeggiator runs (MODE not OFF), loading another sound (a preset or a user preset) keeps the arp: its settings (both ARP pages) and the notes it holds or latches go on with the new sound. With the arp OFF, a preset that has an arp of its own (8BIT ARP…) brings it, as before. (2.7.1) An arp that came with the sound (8BIT ARP, a user preset saved with its arp) and that you did not change goes with it: the next sound brings its own (most often OFF). Change one of its settings and it is yours: it goes on with the next sounds.
 - **ENV SYNC** (ENV DEST → ESYNC ON, 2.6): ATK, DEC and REL become note values of the tempo, from 0 through 1/64T … 1/4, 1/2 … to 4BAR, with triplets and dotted values; at 120 BPM an ATK of 1/4 lasts half a second, at 60 a whole one. They follow the tempo as it changes. OFF: times in milliseconds, as before.
+- **MACRO 1–4**: the [knob macros](#knob-macros) of the track. KNOB 1 / 3 step through the parameters it can take (and *--*, none), a detent each; a parameter just chosen starts at 0 %. KNOB 2 / 4 set the amount, about −100 % (down) to +100 % (up); with no parameter they do nothing. These pages are not the [lock parameter](#parameter-locks) nor MIDI LEARN. On the drum track, **EDIT** opens MACRO 1 (its other EDIT pages are skipped; on TRACKS, EDIT still opens the DRUMS screen); the LFO pages show *DRUM TRACK*.
 - **LFO 2** (2.6): **SYNC** locks the LFO's cycle to a note value of the tempo (RATE is then ignored; OFF: RATE, as before) · **TRIG** NOTE restarts the LFO at PHS on each new phrase (as before), FREE lets it run on · **POL** BI swings above and below the value, UNI only above it (a tremolo that only lowers the level, a wobble that only opens).
 - **FILTER** (EDIT, ANALOG only, 2.6): the ANALOG engine's filter as a **low-pass** (as before), **band-pass** or **high-pass**; CUT, RES and KTR are the same values as on EDIT 2.
 - On the screen, EDIT 1 and EDIT 2 carry the engine's own page names: ANALOG *OSC / FLT*, DIGITAL *OPS / MOD*, PHASE *PHS / LINE*, LOFI *CHIP / MOTN*, SAMPLE *SET / TONE*, VOICE *VOWL / TONE*, TRIO *OSC / TONE*, WHEEL *BARS / TONE*, GRAIN *GRAN / SPRY*, FM6 *OPS / PATCH*, PHYS *BODY / EXCT*, NOISE *SRC / MOVE*.
@@ -901,7 +907,8 @@ On the TRACKS screen, **tap HOME**: the whole screen becomes a visualiser of wha
 | **SELECT** | the next / previous style (its name shows a second; the last one is kept with the settings) |
 | **HOME**, or any page button | closes it |
 | keys, PLAY, REC, layers | work as ever (a held layer shows its screen, then the visualiser comes back) |
-| KNOB 1–4 | nothing (the tempo is GLO + SELECT meanwhile) |
+| KNOB 1–4 | the selected track's [knob macros](#knob-macros) 1–4, 0–100 % (the tempo is GLO + SELECT meanwhile) |
+| ALGORITHM | the selected track, shown by the corner |
 
 | # | Style | Shows |
 | --- | --- | --- |
@@ -917,8 +924,28 @@ On the TRACKS screen, **tap HOME**: the whole screen becomes a visualiser of wha
 | 10 | **ORBIT** | four planets turning in 1, 2, 4 and 8 beats round a sun that pulses with the mix |
 | 11 | **WIRES** | a string per track, set swinging by its notes |
 | 12 | **SLOOP** | the logo alive: the sail's four bands are the tracks, the boat rocks on its wave |
+| 13 | **MACROS** | the selected track's four macros: M1–M4 with their position (0–100 %), and under each its two parameters (*--*: none), each with a bar from a centre line — right: an amount up, left: down; dim: how far it can go, lit: what it adds now — and the amount in % |
+
+**The corner.** In every style, the bottom right corner of a frame — 3 pixels thick, along the last quarter of the bottom edge and up the last quarter of the right edge — is in the **selected track's colour** (the theme's): the track whose macros KNOB 1–4 play. ALGORITHM changes it.
 
 The visualiser sees the mix **as if MASTER were all the way up**: with MASTER turned down, even to 0, it still moves at full size. It costs the sound nothing.
+
+### Knob macros
+
+Each track — the drum track too — has **four macros**, and each macro moves **up to two sound parameters** of the track at once, each by its own amount, up or down: a filter that opens while the reverb goes down, a drive that rises with the delay send, on one knob.
+
+| Where | Control | Does |
+| --- | --- | --- |
+| **EDIT → MACRO 1–4** (after VOICE 2; the drum track: EDIT opens MACRO 1, but on TRACKS the DRUMS screen) | KNOB 1 · KNOB 3 | the macro's first · second parameter: a detent a parameter, round all the ones the track can take and *--* (none) |
+| | KNOB 2 · KNOB 4 | its amount, about −100 % to +100 % (+: up, −: down); a parameter just chosen starts at 0 %, so nothing jumps; with *--* they do nothing |
+| **visualiser** | KNOB 1–4 | macros 1–4 of the selected track, 0 to 100 %; the top line shows *M1 64%*, or *M1 OFF* when the macro has no parameter (then nothing moves) |
+
+- **It adds, it does not overwrite.** A parameter plays at its own value (a step's lock included) plus amount × position × its range, kept within the range; two amounts on the same parameter add up. At 0 % a macro does nothing. The pages, the web editor and your saves only ever see your own values. A macro page is not the [lock parameter](#parameter-locks) and not MIDI LEARN.
+- **Positions stay** when you close the visualiser and when a song section changes (it brings its own macros).
+- **Names.** Short, so that two never look alike: *EFLT* *EPIT* *ESHP* *ETRIM* (ENV DEST and the sound's level trim), *LRATE* *LWAVE* *LFADE* (LFO), *LPIT* *LFLT* *LSHP* *LAMP* (LFO DEST), *SLCR* *SPAT* *SRATE* *SDPTH* (SLICER), *INS A* *INS B* *INS C* *IMIX* (INSERT), *FILT*, *PAN*, *LVL*, *ATK* … *REL*, *DST* *CHO* *DLY* *REV*, and the engine's own as on EDIT.
+- **Which parameters.** The ones a step can lock, except those read only when a note starts or that cannot change under a sounding note, which a macro could not move: **GATE** (SEQ), **DTUNE**, the LFO's **PHS**, **GLIDE**; and on some engines **SAMPLE**'s SET, **SLICE**'s SRC, DIV, START and REV, **GRAIN**'s SRC, **FM6**'s MRAT, VMOD and PTCH, **PHYS**'s MODEL. On the **drum track** the list is shorter: PAN, FILT, the SLICER (SLCR, PAT, RATE, DEPTH) and the INSERT's A, B, C and MIX — its level and sends are on the DRUMS page, and its kit is read at each hit.
+- **Kept with the sound.** A track's macros (parameters and amounts) are saved in your **user presets** (SAVE → USER) and in the **project**: its sections A–D and the autosave, which also brings back the positions after a power-off. Loading a user preset sets the positions to 0. A **factory preset**, **INIT SOUND** (SAVE → TOOLS), **another engine** or a NEW project clears the track's macros.
+- **Older saves.** User presets saved before the macros load exactly as before, with none: load one, set its macros, save it into the same slot. A project with macros opens in 2.8.5 too, without them; and a firmware older than the macros that saves a user preset drops the macros of the 16 presets stored with it (1–16 or 17–32), nothing else. The web editor's backups do not carry the macros (nor the FX lanes).
 
 ---
 
@@ -1302,7 +1329,7 @@ If the official firmware comes up with odd settings or a scrambled display, it i
 | PLAY | start / stop |
 | REC | record / arm / close a free take |
 | hold REC ~2 s | clear the selected track |
-| tap HOME | TRACKS · on TRACKS: visualiser |
+| tap HOME | TRACKS · on TRACKS: visualiser (KNOB 1–4: knob macros) |
 | hold HOME | menu |
 | tap SAVE | on TRACKS: SONG screen · else SAVE pages |
 | tap ENV, LFO, FX, SEL, EDIT, ARP, SEQ, GLO | their pages (again: next page) |
@@ -1374,6 +1401,8 @@ If the official firmware comes up with odd settings or a scrambled display, it i
 | MIDI LEARN | GLO + F#3 · forget: hold HOME → SYSTEM → MIDI LEARN CLEAR |
 | a track's effect (INSERT) | FX → INSERT, INSERT 2 |
 | tempo-synced envelope / LFO | ENV DEST → ESYNC · LFO → LFO 2 → SYNC |
+| knob macros: set up / play | EDIT → MACRO 1–4 · KNOB 1–4 on the visualiser (tap HOME on TRACKS) |
+| which track the visualiser's knobs play | the corner, bottom right, in its colour · ALGORITHM changes it |
 | ANALOG band-pass / high-pass | EDIT → FILTER → TYPE |
 | a note's length in steps | SEQ → NOTES page, KNOB 3 on the note (LEN) |
 | drum mutes | EDIT + a black key, then the sounds' keys |

@@ -158,7 +158,7 @@ static void chord_steps(uint32_t t)
 
 static void t_fuzz(uint32_t nframes)
 {
-    uint32_t home_hold = 0, f, nf, k, i, held_btn = 0, vis_seen = 0, menu_frames = 0, mods = 0, strums = 0;
+    uint32_t home_hold = 0, f, nf, k, i, held_btn = 0, vis_seen = 0, menu_frames = 0, mods = 0, strums = 0, km_live = 0;
     for (k = 0; k < 27u; k++) {
         if (chord_mod_of_key(k)) black_keys[nblack++] = k;
         else if (nwhite < 16u) white[nwhite++] = k;
@@ -223,6 +223,10 @@ static void t_fuzz(uint32_t nframes)
             if (rn(8) == 0 && !ui.menu) { go_home(); vis_open(); }   /* (back to TRACKS, the visualiser open) */
         } else if (r < 65) {
             trk[rn(NTRK)].p[P_MUTE] = (int16_t)(rn(4) == 0);
+        } else if (r < 66) {                        /* KNOB MACROS: any id (the ones it refuses: off), any position */
+            uint32_t t = rn(NTRK), m = rn(KM_N);
+            kmac_set(t, m, rn(2), rn(P_COUNT + 1u), (int32_t)rn(140) - 70);
+            kmac_pos_set(t, m, (int32_t)rn(140) - 6);
         }
         if (rn(40) == 0) held_btn = 0;
         if (rn(900) == 0) ly_lock = (uint8_t)rn(LY_COUNT);
@@ -234,6 +238,18 @@ static void t_fuzz(uint32_t nframes)
         vis_seen |= vis_shown() ? 1u << vis_style : 0u;
         if (ui.menu && ++menu_frames % 300u == 0u) { ui.menu = 0; ui.force = 1; }
         scheck(ui.page < NPAGES && vis_style < VIS_N && song.sel < NTRK, "fuzz: UI state in range");
+        {   /* KNOB MACROS (the MACRO pages, the visualiser's knobs): a target (OFF at 0), -64..63, 0..127 */
+            uint32_t t, m, q, ok = 1;
+            for (t = 0; t < NTRK; t++)
+                for (m = 0; m < KM_N; m++) {
+                    ok &= kmac_pos[t][m] <= 127u;
+                    km_live += !t && !m && kmac_on[0];
+                    for (q = 0; q < 2u; q++)
+                        ok &= (kmac_id[t][m * 2u + q] == KMAC_OFF && !kmac_amt[t][m * 2u + q]) ||
+                              (kmac_id[t][m * 2u + q] < P_COUNT && kmac_amt[t][m * 2u + q] >= -64 && kmac_amt[t][m * 2u + q] <= 63);
+                }
+            scheck(ok, "fuzz: the knob macros in range");
+        }
         if (sfails > 20) break;
     }
     nf = f;
@@ -275,8 +291,8 @@ static void t_fuzz(uint32_t nframes)
             mix_block(o, CTL);
             for (i = 0; i < CTL * 2u; i++) if ((o[i] < 0 ? -o[i] : o[i]) > q) q = o[i] < 0 ? -o[i] : o[i];
         }
-        printf("fuzz: %u frames (%.1f min), peak %d, tail %d, visualiser styles seen %u/12, chords %u, strum changes %u\n",
-               nf, nf * 16.0 / 60000.0, peak, q, (unsigned)__builtin_popcount(vis_seen), mods, strums);
+        printf("fuzz: %u frames (%.1f min), peak %d, tail %d, visualiser styles seen %u/13, chords %u, strum changes %u, track 1's macros live %u frames\n",
+               nf, nf * 16.0 / 60000.0, peak, q, (unsigned)__builtin_popcount(vis_seen), mods, strums, km_live);
         scheck(q < 64, "end: silence after stop");
     }
     scheck(peak < (1 << 24), "fuzz: output bounded");

@@ -12,9 +12,16 @@ typedef struct {
     int16_t g[G_COUNT], p[NTRK][P_COUNT];
     step_t step[NTRK][NSTEP];
     uint8_t eng[NTRK], preset[NTRK];
-    int32_t x[12];
+    int32_t x[14];
 } snap_t;
 static snap_t s0, s1;
+static int32_t bytes_hash(const void *p, size_t n)   /* (the KNOB MACROS tables: one value each) */
+{
+    const uint8_t *b = p;
+    uint32_t h = 2166136261u;
+    while (n--) h = (h ^ *b++) * 16777619u;
+    return (int32_t)h;
+}
 static void snap(snap_t *s)
 {
     uint32_t k;
@@ -27,12 +34,13 @@ static void snap(snap_t *s)
     s->x[0] = rec_tempo, s->x[1] = rec_count, s->x[2] = rec_quant_off, s->x[3] = song.sel, s->x[4] = ui.page;
     s->x[5] = ui.home, s->x[6] = ui.step_page, s->x[7] = ui.cursor, s->x[8] = drum_page, s->x[9] = drum_cursor;
     s->x[10] = rec_wait, s->x[11] = ui.zoom;
+    s->x[12] = bytes_hash(kmac_id, sizeof kmac_id) ^ bytes_hash(kmac_amt, sizeof kmac_amt), s->x[13] = bytes_hash(kmac_pos, sizeof kmac_pos);
 }
 /* the values a turn changed (a new sound, PRESETS: one), their names into what */
 static uint32_t changed(char *what, size_t n)
 {
-    static const char *const XN[12] = {"MODE", "START", "QUANT", "track", "page", "home", "step page", "cursor",
-                                       "drum page", "drum cursor", "rec arm", "zoom"};
+    static const char *const XN[14] = {"MODE", "START", "QUANT", "track", "page", "home", "step page", "cursor",
+                                       "drum page", "drum cursor", "rec arm", "zoom", "macro", "macro pos"};
     uint32_t c = 0, k, i;
     what[0] = 0;
 #define NOTE(...) do { size_t l = strlen(what); c++; if (l + 24u < n) snprintf(what + l, n - l, __VA_ARGS__); } while (0)
@@ -53,7 +61,7 @@ static uint32_t changed(char *what, size_t n)
                 break;
             }
     }
-    for (i = 0; i < 12u; i++)
+    for (i = 0; i < 14u; i++)
         if (s0.x[i] != s1.x[i] && !(i >= 4u && i <= 9u && s0.x[3] != s1.x[3]))
             NOTE(" %s", XN[i]);                   /* (ALGORITHM: the new track's page, ui.c page_fix, is the same move) */
 #undef NOTE

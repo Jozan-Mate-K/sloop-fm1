@@ -90,7 +90,7 @@ Details in [SLOOP.md](SLOOP.md#new-in-27). Projects, autosaves and backups from 
 - **Each track on its own MIDI channel** (GLO → MIDI: CH1, CH2, CH3, OTHER), in and out, for an external sequencer (drums 10, bass 2, pad 11, lead 8…). Thanks to the viewer who asked!
 - **Step entry from a MIDI keyboard:** on the STEP page, the notes your keyboard plays write the step, as the FM-1's keys do.
 - **Program Change, 1/4D delay, REV / ECHO THROW** (FX + OCT− / OCT+), after Felucca 1.5.1.
-- **Erase a saved loop:** SAVE → PROJECT → ERASE (KNOB 2) empties a project slot, song section A–D. Thanks to the viewer who asked!
+- **Erase a saved loop:** SAVE → SECTION → ERASE (KNOB 3; KNOB 2 before) empties a project slot, song section A–D. Thanks to the viewer who asked!
 - **The web editor offline:** *Download the editor* saves it as one file that runs in Chrome or Edge without internet, or *Install the app* (Android too): the editor and the installer then open without internet.
 - **MIDI IN on one channel** (GLO → MIDI 2 → IN = CH 1 … 16), for a sequencer driving other gear on the same cable.
 - **A bolder screen:** Terminus Bold, all in capitals.
@@ -134,7 +134,7 @@ Projects, autosaves and backups from 2.4 load as they are. Going back to 2.4: a 
 | **Your own drum kits** | A 4th sample slot (USR4). KIT USR1–USR4 or **USR3+4** (a big kit, about 15 s) on the drum track: 16 of your sounds, one per lane, built in the editor's new **Drum kit** page (drop WAVs on pads, sorted by name; pitch, gain, length; choose where; ZIP to share). |
 | **New web editor** | Rebuilt in the FM-1's own look (black, the four track colours, its pixel font): each button's pages as rows of four coloured knobs, values you drag like knobs, the steps as the device's tiles. |
 | **CHORD+** | In chord mode the black keys change the chord (major ↔ minor, 7th, sus4, 9th, inversion), even while it is held; STRUM strums the chords, VLEAD voices them smoothly. After HiChord and minichord. |
-| **The visualiser** | On the TRACKS screen, tap HOME: 12 full-screen styles (oscilloscope, spectrum, spectrogram, Lissajous, VU meters, circle, tape, LCD, bounce, orbit, wires, the SLOOP logo), SELECT to change. |
+| **The visualiser** | On the TRACKS screen, tap HOME: 12 full-screen styles (oscilloscope, spectrum, spectrogram, Lissajous, VU meters, circle, tape, LCD, bounce, orbit, wires, the SLOOP logo), SELECT to change. Now 13, with MACROS, and KNOB 1–4 play the knob macros there. |
 | **A filter per track** | One knob, low-pass to the left, high-pass to the right, on each track and the drums: FX → FILTER, or FX held + KNOB 4. Lockable on a step. |
 | **Bigger values** | Pages without a graph (EDIT, VOICE, GLOBAL…) show their four values in large type in the middle of the screen. |
 | **SELECT turns the pages** | On a page (LFO, FX, EDIT…), SELECT goes to the next / previous page of its group. On HOME it is still the tempo. |
@@ -221,6 +221,7 @@ Keys 1, 5, 9 and 13 glow dimly while a layer is held: the first key of each row 
 - **Twelve engines:** analog, 4-op FM, **6-op FM with DX7 patches (FM6, 2.4)**, phase distortion, three-oscillator, tonewheel organ, formant voice, granular, lo-fi chip, sampler, **physical models (PHYS, 2.5)**, **noise (NOISE, 2.5)**.
 - **153 sounds, browsed by kind** — basses (sliding 808s, acid 303, reese, FM, bass guitar), guitars, sitar and koto (physical models), keys (Rhodes, a real Steinway grand, house and afro keys), organs and accordion, pads (string machine, granular clouds), leads (supersaw, talkbox, pan flute, harmonica), plucks and bells (harp, steel drum, glockenspiel, celesta, xylophone), stabs and dub chords — every one level-matched. **32 slots** for your own presets.
 - Envelopes (with a pitch punch for 808s; 2.6: in note values with ENV SYNC), LFO (2.6: tempo-synced, free-running or unipolar), arpeggiator, glide and voice modes (POLY, MONO, LEGATO, UNISON), per-track drive, **INSERT effect** (2.6: soft / hard clip, wavefolder, fuzz, bit crush, phaser, flanger, chorus) and slicer, ANALOG's filter as LP, BP or HP (2.6), sends to a **stereo chorus**, a **tempo delay** (dotted 1/8 and 1/16 too) and a **stereo reverb**.
+- **Knob macros:** four per track (drums too), each moving up to two sound parameters by an amount up or down. Set them on EDIT → MACRO 1–4 (after VOICE 2), play them with KNOB 1–4 on the visualiser; they add to your values and overwrite none, and are kept in user presets and the project.
 - **Key and chords (SEL):** the key of the song for all synths, 16 scales, one-key chords (triad, 7th, 9th, sus4, power), keys snapped to the scale or the scale on the white keys.
 
 ### Recording and the sequencer
@@ -317,10 +318,10 @@ Nothing to download or compile. Your projects, user presets, samples and setting
 | **SELECT** | on HOME and inside a layer: tempo · on a page: the previous / next page of its group · DRUMS: grid / kit |
 | **ALGORITHM** | the selected track: 1 · 2 · 3 (synths) · 4 (drums) |
 | **PRESETS** | the selected track's sound, or the drum kit |
-| **KNOB 1–4** | what the four dials at the bottom of the screen show, each in its colour |
+| **KNOB 1–4** | what the four dials at the bottom of the screen show, each in its colour · on the visualiser: the selected track's knob macros |
 | **OCT− / OCT+** | octave (both: back to 0) · on the drum track, held: ghost / hard hits |
 | **FX · SEL · ENV · LFO · EDIT · GLO** (top row) | tap: their pages · hold FX, SEL, EDIT, GLO: a layer. **SEL** is the second button of the top row, between FX and ENV (not the SELECT knob) |
-| **HOME** | the TRACKS screen · on it: the full-screen visualiser (SELECT: 12 styles; HOME again closes it) · hold: the menu · tapped while a layer is held: lock it |
+| **HOME** | the TRACKS screen · on it: the full-screen visualiser (SELECT: 13 styles; KNOB 1–4: the selected track's knob macros, its colour in the bottom right corner; HOME again closes it) · hold: the menu · tapped while a layer is held: lock it |
 | **SAVE** | on TRACKS: the SONG screen · elsewhere: the SAVE pages · hold: the song layer |
 | **ARP · SEQ** | tap: their pages · hold: note repeat · steps |
 | **PLAY** | start / stop all four tracks; its light flashes on every beat |

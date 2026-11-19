@@ -633,6 +633,7 @@ static void strum_block(uint32_t n)
  * new values; IRQ off). The voices sounding then fade out over XF_BLOCKS rendered with these values, the part's DIST,
  * INSERT, level trim and sends included (fx.c mix_part), as for an engine switch: no jump of a filter, a drive or a
  * release in the middle of a note (a click). A fade under way keeps the sound it started from */
+static uint32_t kmac_mv(uint32_t t, int16_t *p, uint32_t n, uint32_t sv);   /* (fx.c) */
 static void sound_change(track_t *t)
 {
     if (!t->pold) {                                     /* (the ISR reads p_old only once pold is set: no IRQ-off
@@ -640,6 +641,7 @@ static void sound_change(track_t *t)
                                                          * engine fade without a preset takes it too, never an old
                                                          * p_old) */
         memcpy(t->p_old, t->p, sizeof t->p_old);
+        kmac_mv((uint32_t)(t - trk), t->p_old, 0, 0);   /* (its KNOB MACROS in: the sound heard) */
         __asm__ volatile("" ::: "memory");
         t->pold = 1;
     }

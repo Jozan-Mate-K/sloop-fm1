@@ -179,7 +179,13 @@ presets.
 0xDC000..0xDFFFF), 16 records of 192 bytes each, behind a bank header (magic "UPB1", record size,
 slot count; a mismatch reads as an empty bank). A record keeps its layout version (mismatch: empty)
 and the P_COUNT it was stored with; another count is mapped by count (last 8 values = P_E0..P_E7, the
-first ones = P_LEVEL.. in order, missing ones = defaults). P_COUNT was 53 (P_E0 45) until the SLICER
+first ones = P_LEVEL.. in order, missing ones = defaults). The KNOB MACROS stored with a sound (SAVE, `UP_STORE`: the selected
+track's targets and amounts, not their positions) are not in the record: they ride in a **bank tail** in the bank's own
+sector, at byte 0xE00 after the 3080-byte payload (`up_tail_t`: magic "UPM1", 16 × (8 targets as MIDI LEARN codes, 0 =
+none, then 8 signed amounts −64..63), CRC-32; written before the commit header). The payload is unchanged, so older
+firmware reads the bank as before; its own save of the bank erases the sector and the macros go (the presets stay).
+`UP_PUT` and `UP_ERASE` clear that slot's macros, `UP_LOAD` gives them to the track (each target checked; a bank without a
+valid tail: none). `UP_GET` / `UP_PUT` frames carry no macros. P_COUNT was 53 (P_E0 45) until the SLICER
 parameters (SLCR, PAT, RATE, DEPTH: ids 45..48) went in just before P_E0: P_COUNT 57, P_E0 49; SLOOP 2.0
 added CHORD (id 49): P_COUNT 58, P_E0 50 (and G_COUNT 32: DUST, DUCK, FILT, ROLL, NEW at 27..31). An
 editor takes them from `INFO`; older records load with the SLICER off and CHORD off. SLOOP 2.5 adds `G_DRDLY` (id 32,
@@ -277,7 +283,7 @@ G_COUNT 45. An editor reads both from `INFO` and maps a patch file by its own co
 (`persist_t`: colours, low cut, zoom, the panel calibration, the song order, the lights word: lights, SYNC,
 the REC screen's mode and start, USB AUDIO and, since 2.4, MIDI OUT = SEQ (bit 14) and IN = CLOCK (bit 15)),
 **2..5** the projects 1..4 (song sections A..D; length 0 = empty), **6..7** the user preset banks (`up_bank_t`,
-16 records each; 0 = empty), **32..35** the user sample slots USR1..4 (35: SLOOP 2.4) (header + ADPCM data, as in flash; 0 =
+16 records each; 0 = empty; the payload only: a restore drops that bank's KNOB MACROS, the bank tail above), **32..35** the user sample slots USR1..4 (35: SLOOP 2.4) (header + ADPCM data, as in flash; 0 =
 empty). Numbers are 5 × 7 bit (u35, LSB first); data is pack7.
 
 | cmd | Request args | Reply args |

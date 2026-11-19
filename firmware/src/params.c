@@ -247,6 +247,24 @@ static const param_desc_t *track_desc(const track_t *t, uint32_t id)
     return &TP[id];
 }
 
+/* a target's short name, distinct (KNOB MACROS, the lock parameter): ENV's E FLT .., the LFO's and its DEST's L RATE ..,
+ * the SLICER's S PAT .., the INSERT's A B C as INS A .. (whatever its TYPE), its MIX IMIX, an engine's its own */
+static const char *kmac_label(const track_t *t, uint32_t id)
+{
+    static char b[8];
+    char c = id >= P_ED_FLT && id <= P_ED_FX ? 'E' : id >= P_LRATE && id <= P_LD_AMP ? 'L' : id == P_SLPAT || id == P_SLRATE ? 'S' : 0;
+    const char *s = id >= P_IA && id <= P_IC ? TP[id].label : track_desc(t, id % P_COUNT)->label;
+    if (id == P_SLDEPTH)
+        return "SDPTH";
+    if (id == P_IMIX)
+        return "IMIX";                                  /* (not ANALOG's MIX) */
+    if (!c)
+        return s;
+    b[0] = c;
+    str_cpy(b + 1, s, sizeof b - 1u);
+    return b;
+}
+
 /* a knob turned `steps` on an F_INT with a 0-terminated name list (ENV SYNC's note values, the INSERT's BITS and
  * RATE): a name a detent, landing on the first value that shows it (2.6, as Felucca 1.5's ENV SYNC) */
 static int32_t names_turn(const param_desc_t *d, int32_t v, int32_t steps)
@@ -387,7 +405,7 @@ static void param_format(const param_desc_t *d, int32_t v, char *val, const char
 /* ------------------------------------------------------------ pages --- */
 enum { FAM_HOME, FAM_ENV, FAM_LFO, FAM_FX, FAM_SCL, FAM_EDIT, FAM_GLO, FAM_SAVE, FAM_ARP, FAM_SEQ, FAM_TRK,
        FAM_COUNT };
-enum { SC_TRACK, SC_GLOBAL, SC_ENGINE, SC_STEP, SC_TRK, SC_SONG, SC_DRUM };
+enum { SC_TRACK, SC_GLOBAL, SC_ENGINE, SC_STEP, SC_TRK, SC_SONG, SC_DRUM, SC_MACRO };
 enum { GR_NONE, GR_ADSR, GR_LFO, GR_STEPS, GR_ARP, GR_SCALE, GR_FX, GR_ROLL, GR_BROWSE, GR_SLOTS, GR_USER, GR_TRK,
        GR_SLCR, GR_INS };
 
@@ -419,6 +437,10 @@ static const page_t PAGES[] = {
                                                                           * RES KTR (page_shown) */
     {"VOICE", FAM_EDIT, SC_TRACK, GR_NONE, {P_VOICE, P_GLIDE, P_GLMODE, P_PRIO}},
     {"VOICE 2", FAM_EDIT, SC_TRACK, GR_NONE, {P_ALLOC, P_DETUNE, P_PAN, P_MUTE}},
+    {"MACRO 1", FAM_EDIT, SC_MACRO, GR_NONE, {0, 0xFF, 0xFF, 0xFF}},   /* KNOB MACROS: id[0] the macro; K1 / K3 a target, */
+    {"MACRO 2", FAM_EDIT, SC_MACRO, GR_NONE, {1, 0xFF, 0xFF, 0xFF}},   /* K2 / K4 its amount (ui_input.c); KNOB 1..4 on */
+    {"MACRO 3", FAM_EDIT, SC_MACRO, GR_NONE, {2, 0xFF, 0xFF, 0xFF}},   /* the visualiser move them (fx.c kmac_*): the */
+    {"MACRO 4", FAM_EDIT, SC_MACRO, GR_NONE, {3, 0xFF, 0xFF, 0xFF}},   /* drum track too: EDIT opens there) */
     {"GLOBAL", FAM_GLO, SC_GLOBAL, GR_NONE, {G_BPM, G_SWING, G_CLOCK, G_TUNE}},
     {"MASTER", FAM_GLO, SC_GLOBAL, GR_NONE, {G_DUST, G_DUCK, G_FILT, G_ROLL}},
     {"SYSTEM", FAM_GLO, SC_GLOBAL, GR_NONE, {G_MIDI, G_SYNC, G_ROUTE, G_INFO}},
@@ -433,7 +455,7 @@ static const page_t PAGES[] = {
     {"TEXTURE 2", FAM_GLO, SC_GLOBAL, GR_NONE, {G_TXRATE, G_TXWHEN, G_TXDUCK, 0xFF}},
     {"PRESETS", FAM_SAVE, SC_GLOBAL, GR_BROWSE, {0xFF, 0xFF, 0xFF, 0xFF}},   /* browser: PRESETS knob / KNOB 1 */
     {"USER", FAM_SAVE, SC_GLOBAL, GR_USER, {0xFF, 0xFF, 0xFF, 0xFF}},       /* user presets: SLOT LOAD ERASE SAVE */
-    {"SECTION", FAM_SAVE, SC_GLOBAL, GR_SLOTS, {G_SLOT, 0xFF, G_LOAD, G_SAVE}},   /* ("PROJECT" before 2.7) */   /* (KNOB 2: ERASE, 2.6: ui_input.c) */
+    {"SECTION", FAM_SAVE, SC_GLOBAL, GR_SLOTS, {G_SLOT, G_LOAD, 0xFF, G_SAVE}},   /* ("PROJECT" before 2.7) */   /* (KNOB 3: ERASE, ui_input.c; as USER: LOAD 2, ERASE 3) */
     {"TOOLS", FAM_SAVE, SC_GLOBAL, GR_NONE, {G_CLRSEQ, G_INITSND, 0xFF, G_NEWPRJ}},
     {"ARP", FAM_ARP, SC_TRACK, GR_NONE, {P_AMODE, P_ARATE, P_AOCT, P_AGATE}},   /* (2.7.2: its values large, as ARP 2:
                                                        * GR_ARP was never drawn, the middle stayed empty) */
@@ -447,7 +469,7 @@ static const page_t PAGES[] = {
 #define NPAGES (sizeof(PAGES) / sizeof(PAGES[0]))
 
 /* the drum track has no sound of its own: it uses the global pages (not the preset
- * pages, nor TOOLS > INIT: page_desc), STEP, PATTERN, SLICER and TRACKS; every other page
+ * pages, nor TOOLS > INIT: page_desc), STEP, PATTERN, SLICER, TRACKS and the MACRO pages; every other page
  * shows "DRUM TRACK" */
 static int page_for_drum(const page_t *pg)
 {
@@ -460,10 +482,13 @@ static int page_for_drum(const page_t *pg)
                                                        * track's filter: the drums have it since 2.4, the page was
                                                        * greyed "DRUM TRACK") */
 }
-/* a page the buttons and SELECT reach on the selected track: EDIT > FILTER (TYPE) on ANALOG only */
+/* a page the buttons and SELECT reach on the selected track: EDIT > FILTER (TYPE) on ANALOG only; on the drum track
+ * not the EDIT pages it has not (EDIT opens MACRO 1; LFO, FX, SAVE still show "DRUM TRACK") */
 static int page_shown(const page_t *pg)
 {
-    return pg->id[0] != P_FTYPE || (!is_drum(TSEL) && TSEL->eng_req % NENGINES == 0u);
+    if (is_drum(TSEL))
+        return pg->id[0] != P_FTYPE && (pg->fam != FAM_EDIT || page_for_drum(pg));
+    return pg->id[0] != P_FTYPE || TSEL->eng_req % NENGINES == 0u;
 }
 
 static const param_desc_t *page_desc(const page_t *pg, uint32_t slot, int16_t **valp)
@@ -473,7 +498,7 @@ static const param_desc_t *page_desc(const page_t *pg, uint32_t slot, int16_t **
         *valp = 0;
         return 0;
     }
-    if (pg->scope == SC_STEP || pg->scope == SC_TRK) {
+    if (pg->scope == SC_STEP || pg->scope == SC_TRK || pg->scope == SC_MACRO) {
         *valp = 0;
         return 0;
     }

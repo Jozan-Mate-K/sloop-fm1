@@ -1168,6 +1168,106 @@ static const param_desc_t *lock_desc(const track_t *t, uint32_t id)
         return &ENGINES[t->engine % NENGINES]->edit[id - P_E0];
     return &TP[id % P_COUNT];
 }
+/* KNOB MACROS (fx.c kmac_*): a target moved per block, so not the ones read at a note-on only (GATE, DETUNE, the LFO's
+ * PHASE, GLIDE) nor an engine's that break when they move under a note: per engine (ENGINES[] index) a bit per P_E*:
+ * SAMPLE's SET; GRAIN's SRC (gr_reset: silence); FM6's E3, E5 (at the note-on) and E7 (the patch, fm6_poll); PHYS's
+ * MODEL (a note never struck); SLICE's E0, E1, E2, E5. The drum track: its level and sends are G_DR*, its kit read at
+ * the note-on: PAN, FILT, the SLICER and the INSERT only */
+static const uint8_t KMAC_EX[13] = {[4] = 0x01 /* SAMPLE */, [ENGI_GRAIN] = 0x01, [ENGI_FM6] = 0xA8, [ENGI_PHYS] = 0x01,
+                                    [ENGI_SLICE] = 0x27};
+/* a target's range: lock_desc, an engine's value as the engine coming has it (eng_req: a section or a user preset
+ * loaded fades the old one out first; kmac_apply leaves the engine's values alone until then) */
+static const param_desc_t *kmac_desc(const track_t *t, uint32_t id)
+{
+    return id >= P_E0 && !is_drum(t) ? &ENGINES[t->eng_req % NENGINES]->edit[(id - P_E0) & 7u] : lock_desc(t, id);
+}
+static int kmac_ok(const track_t *t, uint32_t id)
+{
+    const param_desc_t *d;
+    if (id >= P_COUNT || !p_lockable(id) || id == P_SGATE || id == P_DETUNE || id == P_LPHASE || id == P_GLIDE)
+        return 0;
+    if (is_drum(t) ? !(id == P_PAN || id == P_TFLT || (id >= P_SLCR && id <= P_SLDEPTH) || (id >= P_IA && id <= P_IMIX))
+                   : id >= P_E0 && (KMAC_EX[t->eng_req % NENGINES] >> (id - P_E0) & 1u))
+        return 0;
+    d = kmac_desc(t, id);
+    return d->max > d->min;
+}
+/* the target after id (dir > 0 up, else down) wrapping round: a lock's (ALGORITHM with steps held: lockable, a range,
+ * on the drum track not the engine values after its kit), kmac: a macro's (kmac_ok) with KMAC_OFF in the ring (before
+ * P_LEVEL); id KMAC_OFF (or any id past the last) starts there */
+static uint32_t lock_next(const track_t *t, uint32_t id, int32_t dir, int kmac)
+{
+    uint32_t guard = P_COUNT + 1u;
+    if (id > P_COUNT)
+        id = P_COUNT;
+    do {
+        id = (id + (dir > 0 ? 1u : (uint32_t)P_COUNT)) % (P_COUNT + 1u);
+    } while (guard-- && (id == P_COUNT ? !kmac
+                         : kmac ? !kmac_ok(t, id)
+                                             : !p_lockable(id) || lock_desc(t, id)->max <= lock_desc(t, id)->min ||
+                                                   (is_drum(t) && id > P_E0 && id <= P_E7)));
+    return id == P_COUNT ? KMAC_OFF : id;
+}
+/* track ti's deltas from its targets, amounts and positions: amount x position x range / (64 x 127). The track left
+ * alone by the ISR meanwhile (kmac_on 0 first): callers may keep the IRQ on (a block without its macros at worst) */
+static void kmac_sync(uint32_t ti)
+{
+    const track_t *t;
+    uint32_t k, on = 0;
+    t = &trk[ti];                                       /* (ti < NTRK: its callers') */
+    kmac_on[ti] = 0;
+    __asm__ volatile("" ::: "memory");
+    for (k = 0; k < KM_N * 2u; k++) {
+        uint32_t id = kmac_id[ti][k], j;
+        int32_t d = 0;
+        if (id < P_COUNT) {
+            const param_desc_t *ld = kmac_desc(t, id);
+            d = (int32_t)kmac_amt[ti][k] * kmac_pos[ti][k >> 1] * (ld->max - ld->min) / (64 * 127);
+        }
+        kmac_d[ti][k] = 0;
+        for (j = 0; kmac_id[ti][j] != id; j++)   /* (the first slot with this id: the sum there, kmac_mv */
+            ;                                                  /* moves each id once) */
+        kmac_d[ti][j] = (int16_t)(kmac_d[ti][j] + d);
+        on |= d != 0;
+    }
+    __asm__ volatile("" ::: "memory");
+    kmac_on[ti] = (uint8_t)on;
+}
+/* macro k's target s (0, 1) on track ti: id (KMAC_OFF, or one kmac_ok refuses: off) at amt (-64..63), together */
+static void kmac_set(uint32_t ti, uint32_t k, uint32_t s, uint32_t id, int32_t amt)
+{
+    ti %= NTRK, k %= KM_N, s &= 1u;
+    if (!kmac_ok(&trk[ti], id))                         /* (KMAC_OFF too) */
+        id = KMAC_OFF, amt = 0;
+    fm1_irq_off();
+    kmac_id[ti][k * 2u + s] = (uint8_t)id;
+    kmac_amt[ti][k * 2u + s] = (int8_t)clamp(amt, -64, 63);
+    kmac_sync(ti);
+    fm1_irq_on();
+    fxa.rev++;                                          /* (the autosave: punch.c) */
+}
+static void kmac_pos_set(uint32_t ti, uint32_t k, int32_t pos)   /* macro k's position (the visualiser's knob) */
+{
+    ti %= NTRK, k %= KM_N;
+    fm1_irq_off();
+    kmac_pos[ti][k] = (uint8_t)clamp(pos, 0, 127);
+    kmac_sync(ti);
+    fm1_irq_on();
+    fxa.rev++;                                          /* (the autosave: punch.c) */
+}
+/* track ti's macros gone: no target, positions to 0 (a factory preset, INIT, an engine change). No IRQ toggled: the
+ * ISR leaves the track alone from the first write (kmac_on 0), so a caller's own IRQ-off section stays whole */
+static void kmac_clear(uint32_t ti)
+{
+    ti %= NTRK;
+    kmac_on[ti] = 0;
+    __asm__ volatile("" ::: "memory");
+    memset(kmac_id[ti], KMAC_OFF, sizeof kmac_id[ti]);
+    memset(kmac_amt[ti], 0, sizeof kmac_amt[ti]);
+    memset(kmac_pos[ti], 0, sizeof kmac_pos[ti]);
+    memset(kmac_d[ti], 0, sizeof kmac_d[ti]);
+    fxa.rev++;                                          /* (the autosave: punch.c) */
+}
 static void lock_write(track_t *t, uint32_t id, int32_t v)
 {
     const param_desc_t *d = lock_desc(t, id);
@@ -3009,6 +3109,48 @@ static volatile uint8_t ml_arm, ml_heard;  /* the UI waits for a CC; the CC that
 static uint32_t ml_id(uint32_t code)        /* an entry's code -> P_* id, P_COUNT: none this firmware knows */
 {
     return code >= ML_E0 ? (code - ML_E0 < 8u ? P_E0 + code - ML_E0 : P_COUNT) : code && code <= P_E0 ? code - 1u : P_COUNT;
+}
+static uint32_t ml_code(uint32_t id) { return id >= P_E0 ? ML_E0 + id - P_E0 : id + 1u; }   /* (id < P_COUNT) */
+/* KNOB MACROS: the working assignments into a kept table (punch.c kmac_tab_t: a section's, song mode's keep, the side
+ * records), and back: each target checked again (a code this firmware does not know, one kmac_ok refuses on the track
+ * as it is now, an amount out of range: none), the positions kept. ISR (a section played) or the IRQ off */
+/* track t's 8 targets out as codes and amounts, [k * 2 + s] (also a user preset's: upreset.c up_tail_t) */
+UI_SMALL static void kmac_out(uint32_t t, kmac_rec_t *r)
+{
+    uint32_t i, id;
+    t %= NTRK;
+    for (i = 0; i < KM_N * 2u; i++) {
+        id = kmac_id[t][i];
+        r->c[i] = (uint8_t)(id < P_COUNT ? ml_code(id) : 0u);
+        r->a[i] = kmac_amt[t][i];
+    }
+}
+/* and in, each checked, the positions kept (ISR or the IRQ off: the ISR never sees it half done) */
+UI_SMALL static void kmac_in(uint32_t t, const kmac_rec_t *r)
+{
+    uint32_t i, id;
+    t %= NTRK;
+    for (i = 0; i < KM_N * 2u; i++) {
+        int ok;
+        id = ml_id(r->c[i]);
+        ok = r->a[i] >= -64 && r->a[i] <= 63 && kmac_ok(&trk[t], id);   /* (kmac_ok: id < P_COUNT) */
+        kmac_id[t][i] = (uint8_t)(ok ? id : KMAC_OFF);
+        kmac_amt[t][i] = (int8_t)(ok ? r->a[i] : 0);
+    }
+    kmac_sync(t);
+}
+UI_SMALL static void kmac_put(kmac_tab_t *m)
+{
+    uint32_t t;
+    for (t = 0; t < NTRK; t++)
+        kmac_out(t, &m->t[t]);
+}
+UI_SMALL static void kmac_get(const kmac_tab_t *m)
+{
+    uint32_t t;
+    for (t = 0; t < NTRK; t++)
+        kmac_in(t, &m->t[t]);
+    fxa.rev++;                                          /* (the autosave: punch.c) */
 }
 static int ml_free_cc(uint32_t cc)
 {

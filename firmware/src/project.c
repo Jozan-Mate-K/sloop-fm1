@@ -474,7 +474,9 @@ UI_SMALL static void proj_capture(project_t *p)        /* what is playing now, a
         for (k = 0; k < P_COUNT; k++)
             pt_set(&p->t[i], k, trk[i].p[k]);
         p->t[i].engine = trk[i].eng_req;
-        p->t[i].preset = trk[i].preset;
+        p->t[i].preset = trk[i].user ? (uint8_t)(0x80u | (trk[i].user - 1u)) : trk[i].preset;   /* a user preset: 0x80 | its
+                                                         * slot, so it is named again after a load (older firmware: a
+                                                         * factory name, the values the same) */
         memcpy(p->t[i].step, trk[i].step, sizeof trk[i].step);
         for (k = 0; k < NSTEP; k++)
             pt_set_mf(&p->t[i], k, trk[i].micro[k], (uint32_t)trk[i].fill[k / 4u] >> (2u * (k % 4u)));
@@ -504,7 +506,8 @@ static void proj_apply(const project_t *p, int all)
         const proj_trk_t *s = &p->t[k];
         uint32_t e = k < NPART ? s->engine % NENGINES : 0u;
         t->eng_req = (uint8_t)e;
-        t->user = 0;                                    /* (no user preset slot is saved) */
+        t->user = k < NPART && s->preset >= 0x80u && s->preset < 0x80u + UP_SLOTS ? (uint8_t)(s->preset - 0x7Fu) : 0u;   /* 0x80 | the
+                                                         * user preset's slot (user_of: shown while the slot holds one) */
         t->lk_n = 0;                                    /* (the locks in force: the values come from the project) */
         for (i = 0; i < P_COUNT; i++) {                 /* every value back inside its range */
             const param_desc_t *d = k == TRK_DRUM && i == P_E0 ? &DRUM_KIT_DESC :   /* the drum kit */
@@ -514,7 +517,7 @@ static void proj_apply(const project_t *p, int all)
         if (!(p->rsv[0] & 0x40u) && !t->p[P_AMODE])
             t->p[P_AHOLD] = 0;                          /* (2.7) saved before 2.7: HOLD with the arp OFF did nothing then; it
                                                          * is KBD HOLD now, so it starts OFF (no note held by surprise) */
-        t->preset = (uint8_t)(ENGINES[e]->npresets ? (s->preset == 0xFFu ? 0u : s->preset) % ENGINES[e]->npresets : 0u);
+        t->preset = (uint8_t)(ENGINES[e]->npresets ? (s->preset >= 0x80u ? 0u : s->preset) % ENGINES[e]->npresets : 0u);
         memcpy(t->step, s->step, sizeof t->step);
         memset(t->fill, 0, sizeof t->fill);
         for (i = 0; i < NSTEP; i++) {                   /* the nudges and conditions (3 means normal: 0) */
@@ -570,6 +573,7 @@ static union {
     project_v1_t v1;
 } proj_tmp;
 UI_SMALL static void *up_stage(void) { return &proj_tmp; }   /* upreset.c: a user preset bank staged for a write (sloop-lab) */
+_Static_assert(sizeof proj_tmp >= sizeof(up_bank_t) + sizeof(up_tail_t), "a bank and its tail staged");
 
 /* (2.8.5) the punch-in FX automation lanes (punch.c fx_slot, fx_live) ride in the side record of their project's flash
  * object (a section's, the autosave's; storage.c st_side, bytes 64..256): older SLOOP checks the payload's exact length
@@ -577,63 +581,84 @@ UI_SMALL static void *up_stage(void) { return &proj_tmp; }   /* upreset.c: a use
  * on load; a project with no recorded FX attaches nothing (the object is byte-identical to before). */
 #define FXSIDE_MAGIC 0x31415846u                   /* "FXA1" */
 typedef struct { uint32_t magic; uint8_t cells[FXA_MAX]; uint32_t sum; } fxside_t;
-_Static_assert(sizeof(fxside_t) <= ST_SIDE_MAX, "the FX lane side record fits beside a project");
-static fxside_t fxside_out;                         /* staged for the next save (st_side points at it) */
-static uint32_t fxside_rev;                         /* fxa.rev when the working lane was staged (the autosave) */
-static uint32_t fxside_sum(const fxside_t *s)
+/* KNOB MACROS ride after it (2.8.5 reads its 72 bytes only): the assignments (punch.c kmac_tab_t, codes), the positions
+ * (used from the autosave's only: a section loaded keeps them). A magic + checksum of their own, so a lane-only record
+ * (2.8.5's: erased flash after it) has none; with macros and no lane the lane's magic is 0 */
+#define KMSIDE_MAGIC 0x32434D4Bu                   /* "KMC2" (KMC1: an earlier test layout, ignored) */
+typedef struct { uint32_t magic; kmac_tab_t m; uint8_t pos[NTRK][KM_N]; uint32_t sum; } kmside_t;
+typedef struct { fxside_t fx; kmside_t km; } projside_t;
+_Static_assert(sizeof(fxside_t) == 72u && __builtin_offsetof(projside_t, km) == 72u && sizeof(projside_t) <= ST_SIDE_MAX,
+               "the FX lane (as 2.8.5 reads it) then the knob macros, beside a project");
+static projside_t side_pout;                        /* staged for the next save (st_side points at it) */
+static uint32_t fxside_rev;                         /* fxa.rev when the working lane and macros were staged (autosave) */
+static uint32_t side_hash(uint32_t h, const uint8_t *b, uint32_t n)
 {
-    uint32_t i, h = s->magic;
-    for (i = 0; i < FXA_MAX; i++)
-        h = h * 31u + s->cells[i];
+    while (n--)
+        h = h * 31u + *b++;
     return h;
 }
-/* st_save of a project object with a lane (on: it has content, else nothing attached) as its side record; staged with
- * the IRQ off (the working lane is the audio ISR's), disarmed after, so the next save is clean */
-static int st_save_fx(uint32_t obj, const uint8_t *cells, uint32_t on, const void *src, uint32_t len)
+static uint32_t fxside_sum(const fxside_t *s) { return side_hash(s->magic, s->cells, FXA_MAX); }
+static uint32_t kmside_sum(const kmside_t *s) { return side_hash(s->magic, (const uint8_t *)&s->m, sizeof s->m + sizeof s->pos); }
+/* st_save of a project object with a side record: its lane (on: it has content) and its macros (m: a section's, 0: the
+ * working ones and their positions), attached when either has something (else the object is byte-identical to
+ * before); the snapshot taken with the IRQ off (the ISR writes the working lane, a section played the macros), the
+ * sums after; disarmed after the save */
+static int st_save_fx(uint32_t obj, const uint8_t *cells, uint32_t on, const kmac_tab_t *m, const void *src, uint32_t len)
 {
+    projside_t *s = &side_pout;
+    uint32_t i, any = on;
     int rc;
-    fm1_irq_off();
-    if (on) {
-        fxside_out.magic = FXSIDE_MAGIC;
-        memcpy(fxside_out.cells, cells, FXA_MAX);
-        fxside_out.sum = fxside_sum(&fxside_out);
-        st_side = &fxside_out;
-        st_side_len = sizeof fxside_out;
-    }
+    memset(s->km.pos, 0, sizeof s->km.pos);
+    fm1_irq_off();                                  /* (the snapshot only: the sums after) */
+    memcpy(s->fx.cells, cells, FXA_MAX);
+    if (m)
+        s->km.m = *m;
+    else
+        kmac_put(&s->km.m), memcpy(s->km.pos, kmac_pos, sizeof s->km.pos);
     fxside_rev = fxa.rev;
     fm1_irq_on();
+    s->fx.magic = on ? FXSIDE_MAGIC : 0u;           /* (no lane: never a stale one) */
+    s->fx.sum = fxside_sum(&s->fx);
+    for (i = 0; i < KM_N * 2u * NTRK; i++)
+        any |= s->km.m.t[i / (KM_N * 2u)].c[i % (KM_N * 2u)];
+    s->km.magic = KMSIDE_MAGIC;
+    s->km.sum = kmside_sum(&s->km);
+    if (any) {
+        st_side = s;
+        st_side_len = sizeof *s;
+    }
     rc = st_save(obj, src, len);
     st_side = 0;
     st_side_len = 0;
     return rc;
 }
-/* a lane back from a project object into cells: 1, or 0 (none / invalid: cells untouched) */
-static uint32_t fx_side_get(uint32_t obj, uint8_t *cells)
+/* a project object's side record, read once: bit 0 its lane is in s->fx, bit 1 its macros in s->km (none / invalid: 0) */
+static uint32_t side_get(uint32_t obj, projside_t *s)
 {
-    fxside_t s;
-    if (st_side_load(obj, &s, sizeof s) || s.magic != FXSIDE_MAGIC || fxside_sum(&s) != s.sum)
+    if (st_side_load(obj, s, sizeof *s))
         return 0;
-    memcpy(cells, s.cells, FXA_MAX);
-    return 1;
+    return (s->fx.magic == FXSIDE_MAGIC && fxside_sum(&s->fx) == s->fx.sum) |
+           (s->km.magic == KMSIDE_MAGIC && kmside_sum(&s->km) == s->km.sum) << 1;
 }
-static int st_save_slot(uint32_t slot, const void *src, uint32_t len)   /* a section's object, with its lane */
+static int st_save_slot(uint32_t slot, const void *src, uint32_t len)   /* a section's object, with its lane, macros */
 {
     slot &= 3u;
-    return st_save_fx(OBJ_PROJECT0 + slot, fx_slot[slot], (fxa.slot_on >> slot) & 1u, src, len);
+    return st_save_fx(OBJ_PROJECT0 + slot, fx_slot[slot], (fxa.slot_on >> slot) & 1u, &kmac_slot[slot], src, len);
 }
-static void fx_side_read(uint32_t slot)             /* a section's lane, as its object in flash has it */
+static void fx_side_read(uint32_t slot)             /* a section's lane and macros, as its object in flash has them */
 {
-    uint8_t c[FXA_MAX];
+    projside_t s;
     uint32_t on;
     slot &= 3u;
-    on = fx_side_get(OBJ_PROJECT0 + slot, c);
-    fm1_irq_off();                                  /* (the ISR reads fx_slot when a section starts) */
-    if (on) {
-        memcpy(fx_slot[slot], c, FXA_MAX);
+    on = side_get(OBJ_PROJECT0 + slot, &s);
+    fm1_irq_off();                                  /* (the ISR reads fx_slot, kmac_slot when a section starts) */
+    fxa_drop(slot);
+    if (on & 1u) {
+        memcpy(fx_slot[slot], s.fx.cells, FXA_MAX);
         fxa.slot_on |= (uint8_t)(1u << slot);
-    } else {
-        fxa.slot_on &= (uint8_t)~(1u << slot);
     }
+    if (on & 2u)                                    /* (checked target by target when played: kmac_get) */
+        kmac_slot[slot] = s.km.m;
     fm1_irq_on();
 }
 
@@ -693,7 +718,8 @@ UI_SMALL static void project_erase(uint32_t slot)
 #endif
     fm1_irq_off();
     memset(&proj_slot[slot], 0, sizeof proj_slot[slot]);
-    fxa.slot_on &= (uint8_t)~(1u << slot);                  /* (2.8.5) the section's FX automation goes too */
+    fxa_drop(slot);                                         /* (2.8.5) the section's FX automation goes too, and its
+                                                             * KNOB MACROS */
     sec_dirty &= (uint8_t)~(1u << slot);
     if (live_sec == (int8_t)slot)
         live_sec = -1;
@@ -770,12 +796,15 @@ UI_SMALL static void project_load(uint32_t slot)
 #define AUTOSAVE_GAP 20000u                    /* ms between two saves at least */
 static project_t autosave_buf __attribute__((section(".pool")));
 static uint32_t autosave_hash, autosave_ms, autosave_checked;
-static uint32_t autosave_fxrev;                /* (2.8.5) fxa.rev of the working FX lane saved with it */
+static uint32_t autosave_fxrev;                   /* (2.8.5) fxa.rev of the working FX lane and macros saved with it */
 #if FELUCCA_FLASH
-UI_SMALL static int autosave_changed(void) { return autosave_buf.sum != autosave_hash || fxa.rev != autosave_fxrev; }
-UI_SMALL static int autosave_write(void)       /* autosave_buf, with the working FX lane (2.8.5) as its side record */
+UI_SMALL static int autosave_changed(void)
 {
-    int rc = st_save_fx(OBJ_AUTOSAVE, fx_live, fxa.on, &autosave_buf, sizeof autosave_buf);
+    return autosave_buf.sum != autosave_hash || fxa.rev != autosave_fxrev;
+}
+UI_SMALL static int autosave_write(void)       /* autosave_buf, the working FX lane (2.8.5) and macros: the side record */
+{
+    int rc = st_save_fx(OBJ_AUTOSAVE, fx_live, fxa.on, 0, &autosave_buf, sizeof autosave_buf);
     if (rc == 0) {
         autosave_hash = autosave_buf.sum;
         autosave_fxrev = fxside_rev;
@@ -819,6 +848,8 @@ UI_SMALL static void autosave_resume(void)              /* power-on: the project
 {
 #if FELUCCA_FLASH
     project_t *q = &autosave_buf;
+    projside_t s;
+    uint32_t on;
     int n;
     if (!flash_ok)
         return;
@@ -826,17 +857,13 @@ UI_SMALL static void autosave_resume(void)              /* power-on: the project
     if (!proj_import(q, &proj_tmp, n))
         return;
     autosave_hash = q->sum;
-    {   /* (2.8.5) the working FX lane saved with it (none: none) */
-        uint8_t c[FXA_MAX];
-        uint32_t on = fx_side_get(OBJ_AUTOSAVE, c);
-        fm1_irq_off();
-        if (on)
-            memcpy(fx_live, c, FXA_MAX);
-        fxa.on = (uint8_t)on;
-        fxa_reset();
-        autosave_fxrev = fxa.rev;
-        fm1_irq_on();
-    }
+    on = side_get(OBJ_AUTOSAVE, &s);
+    fm1_irq_off();                                 /* (2.8.5) the working FX lane saved with it (none: none) */
+    if (on & 1u)
+        memcpy(fx_live, s.fx.cells, FXA_MAX);
+    fxa.on = (uint8_t)(on & 1u);
+    fxa_reset();
+    fm1_irq_on();
     if (drch_seed && !(q->rsv[0] & 0x80u) && q->g[G_DRCH] >= 0 && q->g[G_DRCH] <= 16 && q->g[G_DRCH] != midi_set[3]) {
         midi_set[3] = (uint8_t)q->g[G_DRCH];          /* (2.6) updated from 2.5: GLO > DRUMS > CH as it was there (a
                                                      * project's then, a setting of the FM-1 now), kept in the settings */
@@ -848,6 +875,14 @@ UI_SMALL static void autosave_resume(void)              /* power-on: the project
     proj_foreign_parts(q);                         /* (2.8.4) Clipper's working project: its own sounds, default */
     for (n = 0; n < NPART; n++)
         trk[n].engine = trk[n].eng_req;        /* (nothing sounds yet: no fade) */
+    if (on & 2u) {                                 /* KNOB MACROS, after the sounds (checked on them), and positions */
+        fm1_irq_off();
+        for (n = 0; n < (int)sizeof kmac_pos; n++)
+            (&kmac_pos[0][0])[n] = (uint8_t)clamp((&s.km.pos[0][0])[n], 0, 127);
+        kmac_get(&s.km.m);
+        fm1_irq_on();
+    }
+    autosave_fxrev = fxa.rev;                     /* (the lane and the macros as saved) */
 #endif
 }
 
@@ -1195,7 +1230,8 @@ UI_SMALL static uint32_t project_restore(uint32_t slot, const void *raw, uint32_
         if (!flash_ok || st_save(OBJ_PROJECT0 + slot, raw, 0))
             return 4;
         memset(&proj_slot[slot], 0, sizeof proj_slot[slot]);
-        fxa.slot_on &= (uint8_t)~(1u << slot);         /* (2.8.5) a restored-empty section has no FX automation */
+        fxa_drop(slot);                                /* (2.8.5) a restored-empty section has no FX automation,
+                                                         * nor KNOB MACROS */
         sec_dirty &= (uint8_t)~(1u << slot);
         return 0;
     }
@@ -1206,13 +1242,16 @@ UI_SMALL static uint32_t project_restore(uint32_t slot, const void *raw, uint32_
         fm1_irq_off();
         fxa.on = 0;                                    /* (2.8.5) the editor's project brings no FX lane */
         fxa_reset();
+        for (slot = 0; slot < NTRK; slot++)
+            kmac_clear(slot);                          /* nor KNOB MACROS */
         fm1_irq_on();
         return 0;
     }
     if (!flash_ok || st_save(OBJ_PROJECT0 + slot, &autosave_buf, sizeof autosave_buf))
         return 4;
     memcpy(&proj_slot[slot], &autosave_buf, sizeof proj_slot[slot]);
-    fxa.slot_on &= (uint8_t)~(1u << slot);             /* (2.8.5) a project loaded from the editor brings no FX lane */
+    fxa_drop(slot);                                    /* (2.8.5) a project loaded from the editor brings no FX lane,
+                                                         * nor KNOB MACROS */
     sec_dirty &= (uint8_t)~(1u << slot);
     return 0;
 }

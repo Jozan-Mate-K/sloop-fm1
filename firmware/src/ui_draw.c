@@ -437,6 +437,8 @@ UI_SMALL static uint32_t graph_signature(void)
     for (i = 0; i < P_COUNT; i++)
         h = (h ^ (uint32_t)t->p[i]) * 16777619u;
     h ^= (uint32_t)TSEL->preset * 7u + (uint32_t)song.g[G_SLOT] * 13u + TSEL->user * 257u + up_gen * 7919u + ui.uslot * 104729u;
+    if (ui.nm_on)                                        /* (SAVE's name being edited) */
+        h = str_hash(h ^ (ui.nm_pos + 1u) * 2246822519u, ui.nm);
     {   /* (2.7) the favourites: the PRESETS list and its FAV column */
         uint32_t q;
         for (q = 0; q < FAV_N; q++) h = h * 31u + fav[q];
@@ -499,6 +501,17 @@ UI_SMALL static void graph_user(void)
         if (sel)
             cv_rect(4, y + 6, 3, 3, C_WHITE);
         cv_text(14, y, &FONT_S, tag, sel ? C_WHITE : C_GRAY);
+        if (sel && ui.nm_on) {                          /* SAVE's name: a cell a letter, the position underlined */
+            uint32_t i;
+            for (i = 0; i < 12u; i++) {
+                char c[2] = {ui.nm[i] == ' ' ? '_' : ui.nm[i], 0};
+                int32_t x = 54 + (int32_t)i * 15;
+                cv_text(x, y, &FONT_S, c, i == ui.nm_pos ? C_WHITE : ui.nm[i] == ' ' ? C_DIM : C_HI);
+                if (i == ui.nm_pos)
+                    cv_rect(x - 1, y + 15, 12, 2, C_WHITE);
+            }
+            continue;
+        }
         cv_text(54, y, &FONT_S, nm, used ? (sel ? C_WHITE : C_HI) : C_DIM);
     }
 }
@@ -964,6 +977,17 @@ UI_SMALL static void draw_columns(void)
         draw_column(3, "FAV", fav_has(fav_key()) ? "ON" : "--", "", VAL(3u), -1, ICON_NONE);   /* (2.7) KNOB 4 */
         return;
     }
+    if (cur_page()->graph == GR_USER && ui.nm_on) {      /* SAVE's name: POS, CHAR, BACK, SAVE */
+        char u[4] = "/12";
+        fmt_int(val, (int32_t)ui.nm_pos + 1);
+        draw_column(0, "POS", val, u, VAL(0u), (int32_t)ui.nm_pos * 1000 / 11, ICON_AUTO);
+        val[0] = ui.nm[ui.nm_pos] == ' ' ? '_' : ui.nm[ui.nm_pos];
+        val[1] = 0;
+        draw_column(1, "CHAR", val, "", VAL(1u), -1, ICON_AUTO);
+        draw_column(2, "BACK", "--", "", C_HI, -1, ICON_AUTO);
+        draw_column(3, "SAVE", "GO", "", C_HI, -1, ICON_AUTO);
+        return;
+    }
     if (cur_page()->graph == GR_USER) {                  /* SLOT, then three GO buttons */
         int used = up_used(ui.uslot);
         up_slot_label(val, ui.uslot);
@@ -1002,11 +1026,26 @@ UI_SMALL static void draw_columns(void)
         draw_column(3, "FORCE", on ? FORCE_N[note_force(st, k)] : "--", "", on ? VAL(3u) : C_DIM, -1, ICON_AUTO);
         return;
     }
+    if (cur_page()->scope == SC_MACRO) {                /* KNOB MACROS: TGT AMT, TGT AMT of the macro (fx.c kmac_*) */
+        uint32_t m = cur_page()->id[0] % KM_N;
+        for (c = 0; c < 4u; c++) {
+            uint32_t id = kmac_id[song.sel][m * 2u + (c >> 1)];
+            int32_t a = kmac_amt[song.sel][m * 2u + (c >> 1)];
+            static const char *const L[4] = {"TGT 1", "AMT 1", "TGT 2", "AMT 2"};
+            if (c & 1u)
+                param_format(&TP[P_PAN], a, val, &unit);   /* (a macro's amount: F_BIPCT -64..63, as PAN) */
+            else
+                str_cpy(val, id < P_COUNT ? kmac_label(TSEL, id) : "--", 12), unit = "";
+            draw_column(c, L[c], val, unit, id < P_COUNT ? VAL(c) : C_DIM, c & 1u ? RATIO(&TP[P_PAN], a) : -1,
+                        ICON_NONE);
+        }
+        return;
+    }
     for (c = 0; c < 4u; c++) {
         int16_t *vp;
         const param_desc_t *d = page_desc(cur_page(), c, &vp);
-        if (cur_page()->graph == GR_SLOTS && c == 1u) {   /* 2.6: ERASE, lit while the slot holds a project */
-            draw_column(1, "ERASE", "--", "", project_used((uint32_t)song.g[G_SLOT] - 1u) ? C_HI : C_DIM, -1, ICON_AUTO);
+        if (cur_page()->graph == GR_SLOTS && c == 2u) {   /* ERASE (KNOB 3), lit while the slot holds a project */
+            draw_column(2, "ERASE", "--", "", project_used((uint32_t)song.g[G_SLOT] - 1u) ? C_HI : C_DIM, -1, ICON_AUTO);
             continue;
         }
         if (!d || !d->label || d->label[0] == '-') {

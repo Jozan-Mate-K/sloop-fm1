@@ -916,7 +916,7 @@ UI_SMALL static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes b
             up_values(&r, v);                              /* each value inside its range */
             for (i = 0; i < P_COUNT; i++)
                 r.p[i] = v[i];
-            rc = ed_flash_busy() ? 3u : up_put(slot, &r) ? 2u : 0u;
+            rc = ed_flash_busy() ? 3u : up_put(slot, &r, 0) ? 2u : 0u;
         }
         ed_b(a[0]);
         ed_b(rc);
@@ -949,7 +949,7 @@ UI_SMALL static void ed_handle(const uint8_t *f, uint32_t n)   /* f: the bytes b
         if (na < 1u)
             return;
         ed_b(a[0]);
-        ed_b(a[0] >= UP_SLOTS ? 1u : ed_flash_busy() ? 3u : up_put(a[0], 0) ? 2u : 0u);
+        ed_b(a[0] >= UP_SLOTS ? 1u : ed_flash_busy() ? 3u : up_put(a[0], 0, 0) ? 2u : 0u);
         break;
     case ED_WATCH:                                         /* on -> on */
         if (na < 1u)

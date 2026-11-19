@@ -77,7 +77,18 @@ static uint32_t up_nth(uint32_t n) { return n; }
 static uint32_t up_rank(uint32_t s) { return s; }
 static void up_name(uint32_t k, char *b) { str_cpy(b, k ? "MY PAD" : "MY LEAD", 13); }
 static void up_slot_label(char *b, uint32_t k) { fmt_int(b, (int32_t)k + 1); }
-static void up_ui(uint32_t op, uint32_t k) { (void)op; (void)k; }
+static void up_auto_name(char *b, uint32_t k) { str_cpy(b, "AUTO", 13); fmt_int(b + 4, (int32_t)k + 1); }
+static int up_can_save(int snd)                          /* (as upreset.c) */
+{
+    if (snd && is_drum(TSEL)) ui_message("DRUM TRACK: NO SOUND");
+    else if (song.playing || transport_req) ui_message("STOP BEFORE SAVE");
+    else return 1;
+    return 0;
+}
+static int up_ui_op = -1;
+static uint32_t up_ui_k;
+static char up_ui_nm[13];                                /* (the name SAVE got: ui.nm, before upreset.c trims it) */
+static void up_ui(uint32_t op, uint32_t k) { up_ui_op = (int)op; up_ui_k = k; memcpy(up_ui_nm, ui.nm, sizeof up_ui_nm); }
 static void settings_save(void) {}
 #include "../firmware/src/ui_song.c"
 #include "../firmware/src/ui_studio.c"
@@ -1225,8 +1236,16 @@ int main(int argc, char **argv)
         check(!strcmp(PT(), "REV/CHO"), "SELECT on FX: on to the last page, REV/CHO");
         tap(B_EDIT); SEL(-9);
         check(!strcmp(PT(), "EDIT 1"), "SELECT on EDIT: back to the first page");
-        SEL(9);
+        SEL(4);
         check(!strcmp(PT(), "VOICE 2"), "SELECT on EDIT: up to VOICE 2");
+        SEL(1);
+        check(!strcmp(PT(), "MACRO 1") && song.g[G_BPM] == bpm, "SELECT on EDIT: then MACRO 1 (KNOB MACROS)");
+        SEL(1); SEL(1); SEL(1);
+        check(!strcmp(PT(), "MACRO 4"), "SELECT on EDIT: ... MACRO 4");
+        SEL(1);
+        check(!strcmp(PT(), "MACRO 4") && song.g[G_BPM] == bpm, "SELECT on EDIT: stops at MACRO 4, the last page");
+        SEL(-4);
+        check(!strcmp(PT(), "VOICE 2"), "SELECT left from MACRO 4: back to VOICE 2");
         tap(B_SEQ); SEL(9);
         check(!strcmp(PT(), "PATTERN"), "SELECT on SEQ: STEP <-> PATTERN, not into the SONG screen");
         tap(B_ENV);
@@ -1435,7 +1454,73 @@ int main(int argc, char **argv)
         check(t->step[2].n == 1u && t->step[2].note[0] % 12u == 0u, "STEP page, no chord mode: one note");
         steps_clear(t); song.sel = 0; go_home(); frames(4);
     }
-    {   /* the visualiser (2.4): HOME on HOME opens it, SELECT its 12 styles, HOME / a page closes it; a layer
+    {   /* KNOB MACROS: EDIT > MACRO 1..4: K1 / K3 a target (OFF in the ring, a new one at 0), K2 / K4 its amount
+         * (-64..63); not the lock parameter; the drum track: its own short list, EDIT opens there */
+        uint32_t j, n, bad = 0, kmok = 1;
+        uint8_t lp = ui.lock_par;
+        #define K(e, v) do { encs[panel.enc[e]] = (v); frame(); } while (0)
+        song.playing = 0; song.sel = 0; go_home(); frames(20);
+        for (j = 0; j < NPAGES; j++) if (!strcmp(PAGES[j].title, "MACRO 1")) break;
+        ui.page = (uint8_t)j; ui.home = 0; ui.force = 1; frame();
+        check(j < NPAGES && cur_page()->scope == SC_MACRO && big_page(cur_page()) && !page_desc(cur_page(), 0, &(int16_t *){0}),
+              "MACRO 1: a page of its own (EDIT group), large values, no p[] behind its knobs");
+        K(EN_K1, 1);
+        check(kmac_id[0][0] == lock_next(TSEL, KMAC_OFF, 1, kmok) && kmac_id[0][0] < P_COUNT && kmac_amt[0][0] == 0,
+              "MACRO 1: KNOB 1 right from OFF: the first target, at 0");
+        K(EN_K2, 300);
+        check(kmac_amt[0][0] == 63, "MACRO 1: KNOB 2 up: the amount stops at +63 (+98 %)");
+        K(EN_K2, -300);
+        check(kmac_amt[0][0] == -64, "MACRO 1: KNOB 2 down: -64 (-100 %)");
+        K(EN_K1, 1);
+        check(kmac_id[0][0] == lock_next(TSEL, lock_next(TSEL, KMAC_OFF, 1, kmok), 1, kmok) && kmac_amt[0][0] == 0,
+              "MACRO 1: a new target starts at 0 (no jump)");
+        K(EN_K1, -1); K(EN_K1, -1);
+        check(kmac_id[0][0] == KMAC_OFF, "MACRO 1: KNOB 1 left back to OFF");
+        K(EN_K1, -1);
+        check(kmac_id[0][0] == lock_next(TSEL, KMAC_OFF, -1, kmok) && kmac_id[0][0] < P_COUNT,
+              "MACRO 1: and round, the last target");
+        K(EN_K2, 5);
+        check(kmac_amt[0][0] == 5 && kmac_id[0][2] == KMAC_OFF, "MACRO 1: KNOB 2 a detent at a time");
+        check(ui.lock_par == lp, "MACRO page: not the SEQ layer's lock parameter");
+        kmac_set(0, 0, 0, P_TFLT, 38); kmac_set(0, 0, 1, P_REV, -26);
+        ui.hot_t = 0; ui.force = 1; frames(2); ppm("page-macro");
+        check(!strcmp(ui.big_l[0], "TGT 1") && !strcmp(ui.big_v[0], kmac_label(TSEL, P_TFLT)) && !strcmp(ui.big_v[1], "+59") &&
+              !strcmp(ui.big_v[3], "-40") && !strcmp(ui.big_u[3], "%"), "MACRO 1: TGT AMT TGT AMT drawn large (FILT +59 %, REV -40 %)");
+        kmac_set(0, 0, 0, KMAC_OFF, 0);
+        ui.force = 1; frame();
+        check(!strcmp(ui.big_v[0], "--") && ui.big_c[0] == C_DIM && ui.big_c[1] == C_DIM, "MACRO 1: a target off: -- (dim)");
+        song.sel = TRK_DRUM; frames(2);
+        for (n = 0, j = KMAC_OFF; n <= P_COUNT; n++) {     /* the drum track's ring: PAN FILT the SLICER the INSERT */
+            K(EN_K3, 1);
+            if ((j = kmac_id[TRK_DRUM][1]) == KMAC_OFF) break;
+            bad += !(j == P_PAN || j == P_TFLT || (j >= P_SLCR && j <= P_SLDEPTH) || (j >= P_IA && j <= P_IMIX));
+        }
+        check(j == KMAC_OFF && n > 4u && !bad, "MACRO 1 on the drum track: KNOB 3 goes round its own targets only");
+        go_home(); frames(2); tap(B_EDIT); frames(2);
+        check(on_drum_page(), "EDIT on TRACKS with the drum track: the DRUMS screen, as before");
+        go_home(); frames(2); tap(B_LFO); frames(2);
+        check(!strcmp(cur_page()->title, "LFO") && !page_for_drum(cur_page()), "LFO on the drum track: LFO as before (DRUM TRACK)");
+        tap(B_EDIT); frames(2);
+        check(cur_page()->scope == SC_MACRO && ui.fam_last[FAM_EDIT] != ui.page,
+              "EDIT on the drum track (not TRACKS): straight to a MACRO page (not DRUM TRACK), the synths' last EDIT page kept");
+        ui.force = 1; frames(2); ppm("page-macro-drums");
+        j = ui.fam_last[FAM_EDIT];
+        for (n = 0, bad = 0; n < 8u; n++) {             /* SELECT both ways: the MACRO pages only, never "DRUM TRACK" */
+            K(EN_SELECT, n < 4u ? -1 : 1);
+            bad += !page_for_drum(cur_page()) || !page_shown(cur_page());
+        }
+        check(!bad && !strcmp(cur_page()->title, "MACRO 4"), "SELECT on the drum track's EDIT pages: MACRO 1..4 only");
+        ui.fam_last[FAM_EDIT] = (uint8_t)j;              /* (SELECT keeps the page walked to as the family's last) */
+        ui.fam_last[FAM_FX] = ui.fam_last[FAM_SAVE] = 0;
+        open_family(FAM_FX); frames(2);
+        check(!strcmp(cur_page()->title, "FX"), "FX on the drum track: the FX page as before (DRUM TRACK), not FILTER");
+        open_family(FAM_SAVE); frames(2);
+        check(cur_page()->graph == GR_BROWSE, "SAVE on the drum track: PRESETS as before (its knob browses the kits)");
+        for (j = 0; j < NTRK; j++) kmac_clear(j);
+        #undef K
+        song.sel = 0; ui.lock_par = lp; go_home(); frames(20);
+    }
+    {   /* the visualiser (2.4): HOME on HOME opens it, SELECT its 13 styles, HOME / a page closes it; a layer
          * shows its screen over it; the style is kept with the settings */
         uint32_t st, j, x, lit, k;
         static const uint8_t BASS[2] = {38, 34};
@@ -1458,8 +1543,12 @@ int main(int argc, char **argv)
         tap(B_HOME); frames(2);
         check(vis_shown() && vis_on, "visualiser: HOME on HOME opens it");
         vis_style = 0; ui.force = 1;
-        for (st = 0; st < 12u; st++) {
+        for (st = 0; st < VIS_N; st++) {
             char nm[80];
+            if (st == 12u) {                        /* MACROS: track 1's macros, up and down */
+                kmac_set(0, 0, 0, P_TFLT, 38); kmac_set(0, 0, 1, P_REV, -26); kmac_pos_set(0, 0, 90);
+                kmac_set(0, 2, 1, P_PAN, -64); kmac_pos_set(0, 2, 127);
+            }
             frames(st == 0u ? 40u : 70u);           /* (past the name's second) */
             ui.force = 1; frames(2);
             for (lit = 0, x = 0; x < 240u * 240u; x++)
@@ -1482,14 +1571,54 @@ int main(int argc, char **argv)
             check(op < 64u && pk > 2000u && lit > 1500u, "visualiser: MASTER at 0: no sound, the picture as at full volume");
             song.master_q12 = m0; frames(4);
         }
-        check(vis_style == 0u, "visualiser: SELECT goes round (12 -> 1)");
+        check(vis_style == 0u, "visualiser: SELECT goes round (13 -> 1)");
         encs[panel.enc[EN_SELECT]] = -1; frames(2);
-        check(vis_style == 11u && (lights_word() >> 17 & 15u) == 11u, "visualiser: SELECT left: SLOOP (12), kept in the settings word");
+        check(vis_style == 12u && (lights_word() >> 17 & 15u) == 12u, "visualiser: SELECT left: MACROS (13), kept in the settings word");
         lights_from_word(lights_word());
-        check(vis_style == 11u, "visualiser: the style read back");
-        { int16_t bpm = song.g[G_BPM], lv = trk[0].p[P_LEVEL];
-          encs[panel.enc[EN_K2]] = 5; frame();
-          check(trk[0].p[P_LEVEL] == lv && song.g[G_BPM] == bpm, "visualiser: KNOB 2 (the hidden TRACKS screen) edits nothing, SELECT is not the tempo"); }
+        check(vis_style == 12u, "visualiser: the style read back");
+        {   /* KNOB MACROS on the visualiser: K1..K4 the selected track's macro positions, the sound moved in the render
+             * only (p[] stays the value set), the position in the banner; a macro with no target: OFF, nothing moves.
+             * The selected track's corner, bottom right */
+            static const uint16_t PX[5][2] = {{239, 239}, {181, 239}, {239, 181}, {100, 239}, {239, 100}};
+            int16_t bpm = song.g[G_BPM], lv = trk[0].p[P_LEVEL], f0 = trk[0].p[P_TFLT];
+            uint32_t ok = 1;
+            encs[panel.enc[EN_K2]] = 5; frame();
+            check(trk[0].p[P_LEVEL] == lv && song.g[G_BPM] == bpm && !kmac_pos[0][1] && !strcmp(ui.msg, "M2 OFF"),
+                  "visualiser: KNOB 2, macro 2 set to nothing: edits nothing (M2 OFF), SELECT is not the tempo");
+            encs[panel.enc[EN_K1]] = -20; frame();
+            check(kmac_pos[0][0] == 70 && trk[0].p[P_TFLT] == f0 && !strcmp(ui.msg, "M1 55%") && vis_shown(),
+                  "visualiser: KNOB 1: macro 1 down to 70 (M1 55 %), the track's FILT as set (moved in the render)");
+            {   /* a detent the scan ISR counts right after the visualiser's read waits for the next pass: it never
+                 * reaches the TRACKS screen under it (KNOB 1..4: TRACK LEVEL LEN PAN), nor SELECT's page walk */
+                int16_t lv0 = trk[0].p[P_LEVEL], ln0 = trk[0].p[P_SLEN], pn0 = trk[0].p[P_PAN];
+                uint32_t k, sel0 = song.sel, st0 = vis_style;
+                for (k = 0; k < 4u; k++) { encs[panel.enc[EN_K1 + k]] = 1; enc_late[panel.enc[EN_K1 + k]] = 1; }
+                encs[panel.enc[EN_SELECT]] = 0; enc_late[panel.enc[EN_SELECT]] = 0;
+                frame();
+                check(trk[0].p[P_LEVEL] == lv0 && trk[0].p[P_SLEN] == ln0 && trk[0].p[P_PAN] == pn0 && song.sel == sel0 &&
+                      song.g[G_BPM] == bpm && vis_style == st0 && vis_shown(),
+                      "visualiser: a late detent on KNOB 1..4 leaves the TRACKS screen's values alone");
+                for (k = 0; k < 4u; k++) encs[panel.enc[EN_K1 + k]] = enc_late[panel.enc[EN_K1 + k]] = 0;
+            }
+            encs[panel.enc[EN_K1]] = -300; frame();
+            check(kmac_pos[0][0] == 0 && !strcmp(ui.msg, "M1 0%"), "visualiser: KNOB 1 stops at 0");
+            encs[panel.enc[EN_K1]] = 300; frame();
+            check(kmac_pos[0][0] == 127 && !strcmp(ui.msg, "M1 100%") && trk[0].p[P_TFLT] == f0,
+                  "visualiser: ... and at 127 (100 %)");
+            ui.force = 1; frames(2); ppm("vis-13-MACROS-full");
+            for (j = 0; j < 5u; j++)
+                ok &= (screen[PX[j][1] * 240u + PX[j][0]] == swap16(TE_COL[0])) == (j < 3u);
+            check(ok, "visualiser MACROS: track 1's corner, bottom right (60 px each way), nothing past it");
+            vis_style = 11u; ui.force = 1; frames(2); ppm("vis-12-SLOOP-corner");
+            for (ok = 1, j = 0; j < 3u; j++) ok &= screen[PX[j][1] * 240u + PX[j][0]] == swap16(TE_COL[0]);
+            check(ok && screen[200u * 240u + 234u] == swap16(C_BLACK) && screen[239u * 240u + 100u] != swap16(C_BLACK),
+                  "visualiser SLOOP: the corner on a black edge over the sea");
+            song.sel = 2; vis_style = 1u; ui.force = 1; frames(2); ppm("vis-02-SPECTRUM-corner-t3");
+            for (ok = 1, j = 0; j < 3u; j++) ok &= screen[PX[j][1] * 240u + PX[j][0]] == swap16(TE_COL[2]);
+            check(ok && vis_shown(), "visualiser: the corner in the selected track's colour (track 3)");
+            song.sel = 0; vis_style = 12u; frames(2);
+            for (j = 0; j < NTRK; j++) kmac_clear(j);
+        }
         press(B_GLO); frames(70);                  /* (held past a tap: 1 s, clipper-fm1 #24) */
         check(ui.layer == LY_MIX, "visualiser: a layer held shows its screen");
         release(B_GLO); frames(4);
@@ -1792,27 +1921,67 @@ int main(int argc, char **argv)
         #undef WALK
     }
 
-    {   /* 2.6 (a YouTube comment): SAVE > PROJECT, KNOB 2 ERASE, a GO button: one detent arms (AGAIN: ERASE), a second
+    {   /* 2.6 (a YouTube comment): SAVE > PROJECT, KNOB 3 ERASE, a GO button: one detent arms (AGAIN: ERASE), a second
          * one erases the slot KNOB 1 picks; a turn to the left does nothing */
         uint32_t i, e0 = erases;
         song.playing = 0;
         go_home(); frame();
         for (i = 0; i < NPAGES; i++) if (!strcmp(PAGES[i].title, "SECTION")) break;
         open_family(PAGES[i].fam); ui.page = (uint8_t)i; ui.fam_last[PAGES[i].fam] = (uint8_t)i; page_entered(); ui.force = 1; frame();
-        check(PAGES[ui.page].graph == GR_SLOTS && PAGES[ui.page].id[1] == 0xFFu, "SAVE > PROJECT: KNOB 2 free for ERASE (no parameter)");
+        check(PAGES[ui.page].graph == GR_SLOTS && PAGES[ui.page].id[2] == 0xFFu && PAGES[ui.page].id[1] == G_LOAD, "SAVE > SECTION: KNOB 2 LOAD, KNOB 3 free for ERASE (as USER)");
         song.g[G_SLOT] = 2;
-        encs[panel.enc[EN_K2]] = -1; frames(2);
-        check(erases == e0 && ui.arm != 0xE8u, "PROJECT, KNOB 2 left: nothing");
-        encs[panel.enc[EN_K2]] = 1; frames(2);
-        check(erases == e0 && ui.arm == 0xE8u && !strcmp(ui.msg, "AGAIN: ERASE"), "PROJECT, KNOB 2 one detent: AGAIN: ERASE, nothing erased");
+        encs[panel.enc[EN_K3]] = -1; frames(2);
+        check(erases == e0 && ui.arm != 0xE8u, "PROJECT, KNOB 3 left: nothing");
+        encs[panel.enc[EN_K3]] = 1; frames(2);
+        check(erases == e0 && ui.arm == 0xE8u && !strcmp(ui.msg, "AGAIN: ERASE"), "PROJECT, KNOB 3 one detent: AGAIN: ERASE, nothing erased");
         ui.force = 1; frame(); ppm("page-project-erase");
-        encs[panel.enc[EN_K2]] = 1; frames(2);
-        check(erases == e0 + 1u && !ui.arm && !strcmp(ui.msg, "ERASED"), "PROJECT, KNOB 2 again: the slot erased");
-        encs[panel.enc[EN_K2]] = 1; frames(100);
-        encs[panel.enc[EN_K2]] = 1; frames(2);
+        encs[panel.enc[EN_K3]] = 1; frames(2);
+        check(erases == e0 + 1u && !ui.arm && !strcmp(ui.msg, "ERASED"), "PROJECT, KNOB 3 again: the slot erased");
+        encs[panel.enc[EN_K3]] = 1; frames(100);
+        encs[panel.enc[EN_K3]] = 1; frames(2);
         check(erases == e0 + 1u && ui.arm == 0xE8u, "  the arm runs out (~1.5 s): a detent after it arms again");
         ui.arm = 0; song.g[G_SLOT] = 1;
         go_home(); frames(4);
+    }
+    {   /* SAVE > USER > SAVE names the preset: KNOB 1 the position, KNOB 2 the letter (blank, A-Z, 0-9, round), KNOB 3
+         * cancels, KNOB 4 saves; it starts as the slot's name; leaving the page drops it; the drum track: no sound */
+        uint32_t k;
+        char b[13];
+        ui.menu = 0; song.sel = 1; go_home(); frames(2);
+        for (k = 0; k < NPAGES; k++) if (!strcmp(PAGES[k].title, "USER")) break;
+        open_family(PAGES[k].fam); ui.page = (uint8_t)k; ui.fam_last[PAGES[k].fam] = (uint8_t)k; page_entered(); ui.force = 1; frames(2);
+        ui.uslot = 0; up_ui_op = -1;
+        encs[panel.enc[EN_K4]] = 1; frames(2);
+        check(ui.nm_on && !strcmp(ui.nm, "MY LEAD     ") && ui.nm_pos == 0u && up_ui_op < 0,
+              "USER: SAVE opens the name, the slot's (MY LEAD), nothing saved yet");
+        encs[panel.enc[EN_K2]] = 1; frames(2);                          /* M -> N */
+        encs[panel.enc[EN_K1]] = 1; frames(2);
+        encs[panel.enc[EN_K2]] = -1; frames(2);                         /* Y -> X */
+        encs[panel.enc[EN_K1]] = 6; frames(2);
+        encs[panel.enc[EN_K2]] = 1; frames(2);                          /* blank -> A */
+        encs[panel.enc[EN_K1]] = 1; frames(2);
+        encs[panel.enc[EN_K2]] = -1; frames(2);                         /* blank -> 9 (round) */
+        encs[panel.enc[EN_K1]] = 40; frames(2);                         /* (stops at 12) */
+        check(!strcmp(ui.nm, "NX LEADA9   ") && ui.nm_pos == 11u, "USER: KNOB 1 the position (1..12), KNOB 2 the letter");
+        ui.force = 1; frames(2); ppm("page-user-name");
+        encs[panel.enc[EN_K4]] = 1; frames(2);
+        memcpy(b, up_ui_nm, sizeof b);
+        check(up_ui_op == 2 && up_ui_k == 0u && !ui.nm_on && !strcmp(nm_trim(b), "NX LEADA9"),
+              "USER: KNOB 4 saves slot 1 as NX LEADA9 (the blanks at the end dropped)");
+        strcpy(b, "            ");
+        check(!strcmp(nm_trim(b), ""), "USER: an all-blank name: the automatic one");
+        up_ui_op = -1;
+        encs[panel.enc[EN_K4]] = 1; frames(2);
+        encs[panel.enc[EN_K3]] = 1; frames(2);
+        check(!ui.nm_on && up_ui_op < 0 && !strcmp(ui.msg, "NOT SAVED"), "USER: KNOB 3 cancels, nothing saved");
+        encs[panel.enc[EN_K4]] = 1; frames(2);
+        go_home(); frames(2);
+        check(!ui.nm_on && up_ui_op < 0, "USER: leaving the page drops the name, nothing saved");
+        song.sel = TRK_DRUM;
+        open_family(PAGES[k].fam); ui.page = (uint8_t)k; page_entered(); frames(2);
+        encs[panel.enc[EN_K4]] = 1; frames(2);
+        check(!ui.nm_on && up_ui_op < 0, "USER: the drum track has no sound to name");
+        song.sel = 1; go_home(); frames(2);
     }
     {   /* 2.7: favourites: the PRESETS page, KNOB 4 right adds the sound to the top of the list, left removes it */
         uint32_t total0, total1, cur, e0, p0, k, e;

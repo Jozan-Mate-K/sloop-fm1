@@ -67,6 +67,52 @@ static int side_tests(void)                          /* 2.7: the side record (pr
     return bad;
 }
 
+static int tail_tests(void)                          /* KNOB MACROS: the tail record (upreset.c up_tail_t) */
+{
+    int bad = 0, n;
+    static uint8_t p1[3080], p2[3080], got[3840], tail[264], ff[264];
+    uint32_t c;
+    memset(p1, 'P', sizeof p1);
+    memset(p2, 'Q', sizeof p2);
+    for (c = 0; c < sizeof tail; c++)
+        tail[c] = (uint8_t)(c * 7u);
+    memset(ff, 0xFF, sizeof ff);
+    st_tail = tail;
+    st_tail_len = sizeof tail;                       /* (over a page boundary: two programs) */
+    bad += check("tail: saved with a copy", st_save(OBJ_UPRESET0, p1, sizeof p1) == 0);
+    st_tail = 0;
+    st_tail_len = 0;
+    n = st_load(OBJ_UPRESET0, got, sizeof got);
+    c = (uint32_t)st_current(OBJ_UPRESET0, &(st_hdr_t){0});
+    bad += check("tail: the payload as without it", n == (int)sizeof p1 && !memcmp(got, p1, sizeof p1));
+    bad += check("tail: at ST_TAIL_OFF of its copy", !memcmp(nor + st_sector(OBJ_UPRESET0, c) + ST_TAIL_OFF, tail,
+                                                             sizeof tail));
+    bad += check("tail: an older save (none): erased bytes",
+                 st_save(OBJ_UPRESET0, p2, sizeof p2) == 0 &&
+                 (c = (uint32_t)st_current(OBJ_UPRESET0, &(st_hdr_t){0}), 1) &&
+                 !memcmp(nor + st_sector(OBJ_UPRESET0, c) + ST_TAIL_OFF, ff, sizeof ff));
+    st_tail = tail;
+    st_tail_len = sizeof tail;
+    fail_after = 13;                                 /* payload (13 pages) written, the tail and header torn */
+    st_save(OBJ_UPRESET0, p1, sizeof p1);
+    fail_after = 14;                                 /* the tail's first page too */
+    st_save(OBJ_UPRESET0, p1, sizeof p1);
+    fail_after = 15;                                 /* the whole tail, the header torn */
+    st_save(OBJ_UPRESET0, p1, sizeof p1);
+    fail_after = -1;
+    n = st_load(OBJ_UPRESET0, got, sizeof got);
+    c = (uint32_t)st_current(OBJ_UPRESET0, &(st_hdr_t){0});
+    bad += check("tail: torn saves keep the last copy, no tail",
+                 n == (int)sizeof p2 && !memcmp(got, p2, sizeof p2) &&
+                 !memcmp(nor + st_sector(OBJ_UPRESET0, c) + ST_TAIL_OFF, ff, sizeof ff));
+    bad += check("tail: a payload reaching it refused", st_save(OBJ_UPRESET0, got, ST_TAIL_OFF - ST_PAYLOAD_OFF + 1u) == -1);
+    /* (a tail past the sector: refused at build time, upreset.c's _Static_assert on up_tail_t) */
+    st_tail = 0;
+    st_tail_len = 0;
+    bad += check("tail: none, a whole payload as ever", st_save(OBJ_UPRESET0, got, ST_PAYLOAD_MAX) == 0);
+    return bad;
+}
+
 int main(void)
 {
     char a[600], b[600], got[600];
@@ -166,6 +212,7 @@ int main(void)
                      st_load(OBJ_PROJECT0 + 2u, got3, sizeof got3) == (int)sizeof a2 && !memcmp(got3, a2, sizeof a2));
     }
     bad += side_tests();
+    bad += tail_tests();
     printf("%s\n", bad ? "STORAGE TEST FAILED" : "storage test passed");
     return bad != 0;
 }

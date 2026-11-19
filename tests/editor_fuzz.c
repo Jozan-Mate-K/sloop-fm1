@@ -55,8 +55,21 @@ static void fail(const char *what)
 static void after(void)
 {
     char why[256];
+    uint32_t t, k;
     if (!params_check(why, sizeof why))
         fail(why);
+    for (t = 0; t < NTRK; t++)                       /* KNOB MACROS: off, or a target the track takes, in range */
+        for (k = 0; k < KM_N * 2u; k++) {
+            uint32_t id = kmac_id[t][k];
+            int32_t a = kmac_amt[t][k];
+            if (id == KMAC_OFF ? a != 0 : id >= P_COUNT || !kmac_ok(&trk[t], id) || a < -64 || a > 63) {
+                snprintf(why, sizeof why, "trk %u macro %u: id %u amt %d", t, k, id, a);
+                fail(why);
+            }
+        }
+    for (t = 0; t < NTRK * KM_N; t++)
+        if (((const uint8_t *)kmac_pos)[t] > 127u)
+            fail("a macro position past 127");
     if (audio_bad)
         fail("audio out of bounds");
 }
@@ -513,7 +526,19 @@ static void flash_random(void)
         if (rn(3)) { proj_random((project_t *)raw); len = sizeof(project_t); }
         else projv_random(raw, &len);
         if (rn(10) == 0) len = rn(len + 1);
+        if (rn(3)) {                               /* its side record (project.c projside_t): a lane, KNOB MACROS, */
+            static projside_t ps;                  /* any codes, amounts and positions: each checked or clamped */
+            uint32_t j;
+            rbytes((uint8_t *)&ps, sizeof ps, 1);
+            for (j = 0; j < NTRK * KM_N * 2u; j++)
+                if (rn(2)) ps.km.m.t[j / (KM_N * 2u)].c[j % (KM_N * 2u)] = (uint8_t)rn(130);
+            ps.fx.magic = rn(2) ? FXSIDE_MAGIC : 0u; ps.fx.sum = fxside_sum(&ps.fx);
+            ps.km.magic = rn(8) ? KMSIDE_MAGIC : (uint32_t)rn(1u << 30);
+            ps.km.sum = kmside_sum(&ps.km) ^ (rn(8) ? 0u : 1u);
+            st_side = &ps; st_side_len = rn(4) ? sizeof ps : rn(2) ? 72u : rn(sizeof ps);
+        }
         st_put(obj, raw, len);
+        st_side = 0; st_side_len = 0;
     }
     for (i = 0; i < 2; i++) {                      /* the user preset banks */
         up_bank_t *b = (up_bank_t *)raw;
@@ -523,7 +548,17 @@ static void flash_random(void)
         b->magic = UP_BANK_MAGIC; b->rsize = sizeof(up_rec_t); b->nslot = UP_PER_BANK;
         for (j = 0; j < UP_PER_BANK; j++)
             if (rn(2)) { b->r[j].used = UP_USED; b->r[j].ver = UP_VER; b->r[j].engine = (uint8_t)rn(NENGINES); b->r[j].np = (uint8_t)(8 + rn(UP_PMAX - 7)); b->r[j].name[0] = (char)(32 + rn(95)); }
+        if (rn(3)) {                               /* KNOB MACROS: its tail (upreset.c), any codes and amounts: each checked */
+            static up_tail_t tl;
+            rbytes((uint8_t *)&tl, sizeof tl, 1);
+            for (j = 0; j < UP_PER_BANK * KM_N * 2u; j++)
+                if (rn(2)) tl.s[j / (KM_N * 2u)].c[j % (KM_N * 2u)] = (uint8_t)rn(130);
+            tl.magic = rn(8) ? UP_TAIL_MAGIC : (uint32_t)rn(1u << 30);
+            tl.crc = st_crc32(&tl, sizeof tl - 4u) ^ (rn(8) ? 0u : 1u);
+            st_tail = &tl; st_tail_len = sizeof tl;
+        }
         st_put(OBJ_UPRESET0 + i, raw, rn(10) ? sizeof *b : rn(sizeof *b));
+        st_tail = 0; st_tail_len = 0;
     }
     if (rn(2)) {                                   /* the FM6 bank */
         fm6_bank_t *b = (fm6_bank_t *)raw;

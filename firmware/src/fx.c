@@ -1175,6 +1175,64 @@ static void texture_mix(int32_t *l, int32_t *r, uint32_t n)
         texture_reset(src);                             /* faded out: the new source from rest */
 }
 
+/* ---- KNOB MACROS: per track 4 macros (KNOB 1..4 while the visualiser shows), each up to 2 targets (a P_* id, a
+ * signed amount, F_BIPCT). As a modulation: for the render only, p[id] = its value + amount x position, then back
+ * (kmac_apply / kmac_restore around the units): the UI, the editor, the autosave and the locks only ever see the
+ * values set. Here (not seq.c) so the preview, which has no UI, links. The UI (seq.c kmac_set, kmac_pos_set,
+ * kmac_clear) writes a target with its amount and the deltas with the IRQ off (kmac_sync); the ISR reads kmac_d */
+#define KMAC_OFF 0xFFu
+static uint8_t kmac_id[NTRK][KM_N * 2] = {[0 ... NTRK - 1] = {[0 ... KM_N * 2 - 1] = KMAC_OFF}};  /* P_*, off */
+static int8_t kmac_amt[NTRK][KM_N * 2];                  /* -64..63 (F_BIPCT: -100 .. +100 % of the range) */
+static uint8_t kmac_pos[NTRK][KM_N];                    /* 0..127: the knobs on the visualiser */
+static int16_t kmac_d[NTRK][KM_N * 2];                  /* the deltas now, per id: a slot whose id an earlier slot has
+                                                         * gives it its delta, 0 here (kmac_sync, main loop: no divide
+                                                         * here; ranges <= 127: a sum <= 8 x 127) */
+static uint8_t kmac_on[NTRK];                           /* a nonzero delta on the track */
+static struct { uint8_t t, id; int16_t base; } kmac_sv[NTRK * KM_N * 2];   /* what kmac_apply moved, its value */
+static uint32_t kmac_svn;
+static const param_desc_t *lock_desc(const track_t *t, uint32_t id);   /* (seq.c) */
+/* track t's deltas into p (its p[] for the render, or voice.c sound_change's p_old: a preset's fade sounds as it was
+ * heard): one sum per id (kmac_sync), clamped to the range; an engine's values left alone while an engine or preset
+ * fades (pe_old / p_old: the old sound's). sv: the render's, each base kept for kmac_restore and an engine's value
+ * moved into pe_old too (engine_block took it before: a later engine fade sounds with the macro) */
+static __attribute__((noinline)) uint32_t kmac_mv(uint32_t t, int16_t *p, uint32_t n, uint32_t sv)
+{
+    track_t *tr = &trk[t];
+    const uint8_t *ids = kmac_id[t];
+    const int16_t *d = kmac_d[t];
+    uint32_t k, ef = tr->eng_req != tr->engine || tr->xf_on || tr->pold;
+    if (!kmac_on[t])
+        return n;
+    for (k = 0; k < KM_N * 2u; k++) {
+        uint32_t id = ids[k];
+        const param_desc_t *ld;
+        if (!d[k] || (ef && id >= P_E0))                /* (a delta: a target, id < P_COUNT) */
+            continue;
+        ld = lock_desc(tr, id);
+        if (sv)
+            kmac_sv[n].t = (uint8_t)t, kmac_sv[n].id = (uint8_t)id, kmac_sv[n++].base = p[id];
+        p[id] = (int16_t)clamp(p[id] + d[k], ld->min, ld->max);
+        if (sv && id >= P_E0)
+            tr->pe_old[id - P_E0] = p[id];
+    }
+    return n;
+}
+/* after the events (locks, the engine switch's pe_old) and before units_split (it reads LRATE and PHYS's E0) */
+static __attribute__((noinline)) void kmac_apply(void)
+{
+    uint32_t t, n = 0;
+    for (t = 0; t < NTRK; t++)
+        n = kmac_mv(t, trk[t].p, n, 1);
+    kmac_svn = n;
+}
+static __attribute__((noinline)) void kmac_restore(void)   /* after both cores' units: the values set, last first */
+{
+    uint32_t n = kmac_svn;
+    while (n--)
+        trk[kmac_sv[n].t].p[kmac_sv[n].id] = kmac_sv[n].base;
+    kmac_svn = 0;
+}
+
 static void mix_block(int32_t *out, uint32_t n)
 {
     uint32_t i, c1;
@@ -1189,6 +1247,7 @@ static void mix_block(int32_t *out, uint32_t n)
     }
     events_block(n);
     duck_block(n * (uint32_t)song.g[G_BPM]);
+    kmac_apply();                                       /* KNOB MACROS: p[] moved for the units (back below) */
     c1 = cpu1_on() ? units_split() : 0;                 /* core 1's units this block */
     if (c1) {
         for (i = 0; i < n; i++)
@@ -1215,7 +1274,8 @@ static void mix_block(int32_t *out, uint32_t n)
             acc[0].sr[i] += acc[1].sr[i];
         }
     }
-    texture_mix(mix_l, mix_r, n);                       /* GLO > TEXTURE (2.6): the bed, dry; after both cores' units
+    kmac_restore();
+    texture_mix(mix_l, mix_r, n);                      /* GLO > TEXTURE (2.6): the bed, dry; after both cores' units
                                                          * (what it adds does not depend on them: the same sum) */
     punch_freeze_feed(acc[0].sr, mix_l, mix_r, n);     /* punch-in FREEZE: the whole dry mix into the held reverb */
     fx_buses(acc[0].sc, acc[0].sd, acc[0].sr, wet_l, wet_r, n);

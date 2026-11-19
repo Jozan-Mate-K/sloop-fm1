@@ -54,14 +54,17 @@ UI_SMALL static void panel_led(uint32_t label, int on) { fm1_led_key(panel.btn[l
 
 /* steps of a role, + = clockwise */
 static uint32_t ui_input_ms;                    /* the last button, key or knob turn (ui_input.c; autosave) */
-/* the knobs (roles, bit per EN_*) not to be read again in this UI pass (ui_input: a layer took them, #102 of
- * Felucca): panel_enc returns 0 and leaves their detents for the next pass */
+/* the knobs (roles, bit per EN_*) already read in this UI pass (ui_input clears it at the top): the first read
+ * claims the role, a later one returns 0 and leaves its detents for the next pass, so a detent the scan ISR counts
+ * after the first read never reaches a second reader (a layer and the page under it, #102 of Felucca; the
+ * visualiser and the TRACKS screen; the REC screen and the page) */
 static uint32_t enc_hold;
 UI_SMALL static int32_t panel_enc(uint32_t role)
 {
     int32_t s;
     if ((enc_hold >> role) & 1u)
         return 0;
+    enc_hold |= 1u << role;
     s = fm1_enc_take(panel.enc[role]) * panel.dir[role];
     if (s)
         ui_input_ms = fm1_ms;                      /* a knob turning is not idle either: autosave waits */
@@ -99,7 +102,7 @@ static uint8_t usb_serial;                      /* menu USB SERIAL: 1 = the seri
 static uint8_t usb_rate;                        /* menu USB RATE (2.7 beta): 0 AUTO, 1 44.1, 2 48 kHz (usb.c usb_rate_mode, at the next start) */
 static uint8_t cpu1_off;                        /* menu 2ND CORE: 1 = OFF, every render unit on core 0 (cpu1.h cpu1_units);
                                                  * 2.7: ON by default (bit 26 set = OFF); core 1 starts at power-on only when ON */
-static uint8_t vis_style;                       /* the visualiser's style, 0..11 (ui_vis.c) */
+static uint8_t vis_style;                       /* the visualiser's style, 0..12 (ui_vis.c) */
 static uint8_t knob_accel_off;                  /* menu KNOB ACCEL (2.7): 1 = OFF, one value a detent however fast (ui_input.c accel) */
 static uint8_t step_adv_off;                    /* menu SEQ > STEP ADVANCE (2.7.1): 1 = OFF, the STEP page's cursor stays where it
                                                  * is when the keys are let go (KNOB 1 moves it); kept in the MIDI part */
@@ -110,7 +113,7 @@ UI_SMALL static uint32_t lights_word(void)
     return (uint32_t)lights_lvl | (uint32_t)lights_keys << 4 | (uint32_t)(lights_notes != 0u) << 8 |
            (uint32_t)(rec_tempo != 0u) << 9 | (uint32_t)(rec_count != 0u) << 10 | (uint32_t)(usb_full != 0u) << 11 |
            (uint32_t)(lights_sync % 3u) << 12 | (uint32_t)(lights_mout != 0u) << 14 | (uint32_t)(lights_min == 1u) << 15 |
-           (uint32_t)(usb_serial != 0u) << 16 | (uint32_t)(vis_style % 12u) << 17 |
+           (uint32_t)(usb_serial != 0u) << 16 | (uint32_t)(vis_style % 13u) << 17 |
            (uint32_t)(lights_min >= 2u && lights_min <= 17u ? lights_min - 1u : 0u) << 21 |   /* 2.6: CH n (n 1..16; 0 none) */
            (uint32_t)(cpu1_off != 0u) << 26 |          /* 2ND CORE OFF (2.7: ON by default; 2.6 took 21..25) */
            (uint32_t)(knob_accel_off != 0u) << 27 |    /* KNOB ACCEL OFF (2.7; 0 = ON, as before 2.7) */
@@ -132,7 +135,7 @@ UI_SMALL static void lights_from_word(uint32_t w)
     if (((w >> 21) & 31u) >= 1u && ((w >> 21) & 31u) <= 16u)
         lights_min = (uint8_t)(((w >> 21) & 31u) + 1u);   /* 2.6: CH n (an older SLOOP reads NOTES) */
     usb_serial = (uint8_t)((w >> 16) & 1u);
-    vis_style = (uint8_t)(((w >> 17) & 15u) % 12u);   /* the visualiser (ui_vis.c); 0 in 2.3 = OSCILLOSCOPE */     /* menu USB SERIAL (usb.c usb_cdc_on, at the next start); 0 in 2.3 = OFF */
+    vis_style = (uint8_t)(((w >> 17) & 15u) % 13u);   /* the visualiser (ui_vis.c); 0 in 2.3 = OSCILLOSCOPE */     /* menu USB SERIAL (usb.c usb_cdc_on, at the next start); 0 in 2.3 = OFF */
     cpu1_off = (uint8_t)((w >> 26) & 1u);       /* menu 2ND CORE (ui_menu.c); 2.7: bit 26 set = OFF, so any older settings
                                                  * word (2.6 and before: 0) reads as ON, the two-core SLOOP (an early 2.7 beta
                                                  * set it for ON: that FM-1 reads OFF once) */
