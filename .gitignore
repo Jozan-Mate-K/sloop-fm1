@@ -1,5 +1,16 @@
 build/
 .DS_Store
 __pycache__/
-graphify-out/
+# graphify: share the graph + LLM extraction cache across machines;
+# keep per-machine state, dated snapshots and regenerable output local.
+graphify-out/*
+!graphify-out/graph.json
+!graphify-out/GRAPH_REPORT.md
+!graphify-out/manifest.json
+!graphify-out/cost.json
+!graphify-out/.graphify_labels.json
+!graphify-out/.graphify_labels.json.sig
+!graphify-out/cache/
+graphify-out/cache/*
+!graphify-out/cache/semantic/
 .claude/branches/

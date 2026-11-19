@@ -5,3 +5,6 @@
 *.wav binary
 *.png binary
 *.ttf binary
+
+# graphify: union-merge graph.json (driver registered per machine by `graphify hook install`)
+graphify-out/graph.json merge=graphify
