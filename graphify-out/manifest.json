@@ -1,0 +1,1976 @@
+{
+  "assets/hiphop-pack/pack.json": {
+    "mtime": 1793009923.9631035,
+    "seen": 1793649866.7985399,
+    "ast_hash": "f48723d84d110bd7f1d721bcc4998709",
+    "semantic_hash": "f48723d84d110bd7f1d721bcc4998709"
+  },
+  "assets/icons.json": {
+    "mtime": 1793009923.9631035,
+    "seen": 1793649866.7985556,
+    "ast_hash": "bdc403348c70f2f8e39d3aad25ab25f7",
+    "semantic_hash": "bdc403348c70f2f8e39d3aad25ab25f7"
+  },
+  "build-sloop.ps1": {
+    "mtime": 1794057361.823252,
+    "seen": 1794074405.4831216,
+    "ast_hash": "66e10973e547f1ab38761feb3d26fcfb",
+    "semantic_hash": ""
+  },
+  "build.sh": {
+    "mtime": 1793651257.1840007,
+    "seen": 1794054524.8966725,
+    "ast_hash": "e74f1da21ac01800cc528ea0ecd21695",
+    "semantic_hash": "e74f1da21ac01800cc528ea0ecd21695"
+  },
+  "docs/webapp/editor/preview-worklet.js": {
+    "mtime": 1793009924.0251346,
+    "seen": 1793649866.7985694,
+    "ast_hash": "b5c5be2ffbf482d486113a7a72e82673",
+    "semantic_hash": "b5c5be2ffbf482d486113a7a72e82673"
+  },
+  "docs/webapp/editor/preview.js": {
+    "mtime": 1793009924.0251346,
+    "seen": 1793649866.7985725,
+    "ast_hash": "87936f81b092fb94268e7de515a389af",
+    "semantic_hash": "87936f81b092fb94268e7de515a389af"
+  },
+  "docs/webapp/sw.js": {
+    "mtime": 1794057361.8350039,
+    "seen": 1794074405.4831293,
+    "ast_hash": "c5f35c167e1a97a5a6a78d0a431180aa",
+    "semantic_hash": ""
+  },
+  "firmware/hal/fm1_adc.h": {
+    "mtime": 1793009924.03649,
+    "seen": 1793649866.7985792,
+    "ast_hash": "d565027d9561f2e56f4306af42788af6",
+    "semantic_hash": "d565027d9561f2e56f4306af42788af6"
+  },
+  "firmware/hal/fm1_audio.h": {
+    "mtime": 1793009924.0366693,
+    "seen": 1793649866.798582,
+    "ast_hash": "0934956eb5f34e69c243e9d10cf2f6c9",
+    "semantic_hash": "0934956eb5f34e69c243e9d10cf2f6c9"
+  },
+  "firmware/hal/fm1_cc.h": {
+    "mtime": 1793009924.0366693,
+    "seen": 1793649866.7985852,
+    "ast_hash": "56a569d1ca64fed9efa6039d3ebd0eb3",
+    "semantic_hash": "56a569d1ca64fed9efa6039d3ebd0eb3"
+  },
+  "firmware/hal/fm1_cpu1.h": {
+    "mtime": 1793647647.357456,
+    "seen": 1793649866.7985885,
+    "ast_hash": "4e00bbc1f497802e6690af0014700104",
+    "semantic_hash": "4e00bbc1f497802e6690af0014700104"
+  },
+  "firmware/hal/fm1_flash.h": {
+    "mtime": 1794057361.8350039,
+    "seen": 1794074405.4831371,
+    "ast_hash": "8777e2b8400c6f300816e0a0ae48cd7e",
+    "semantic_hash": ""
+  },
+  "firmware/hal/fm1_gpio.h": {
+    "mtime": 1793009924.0366693,
+    "seen": 1793649866.7985952,
+    "ast_hash": "ded416df79550abbb3088501b02b7043",
+    "semantic_hash": "ded416df79550abbb3088501b02b7043"
+  },
+  "firmware/hal/fm1_guard.h": {
+    "mtime": 1793009924.0366693,
+    "seen": 1793649866.7985978,
+    "ast_hash": "13b17752f7f2674bcf5bcf0c94abd332",
+    "semantic_hash": "13b17752f7f2674bcf5bcf0c94abd332"
+  },
+  "firmware/hal/fm1_input.h": {
+    "mtime": 1793009924.0366693,
+    "seen": 1793649866.798601,
+    "ast_hash": "5c268d6ecb11db95ade32a41fc7eba22",
+    "semantic_hash": "5c268d6ecb11db95ade32a41fc7eba22"
+  },
+  "firmware/hal/fm1_irq.h": {
+    "mtime": 1793647647.3584561,
+    "seen": 1793649866.7986038,
+    "ast_hash": "1f48fc7229b62f8beb6446138d95d850",
+    "semantic_hash": "1f48fc7229b62f8beb6446138d95d850"
+  },
+  "firmware/hal/fm1_lcd_hw.h": {
+    "mtime": 1793009924.0371406,
+    "seen": 1793649866.798607,
+    "ast_hash": "d1675060dcb2e79bf9c618f364dd7929",
+    "semantic_hash": "d1675060dcb2e79bf9c618f364dd7929"
+  },
+  "firmware/hal/fm1_sys.h": {
+    "mtime": 1793009924.0371406,
+    "seen": 1793649866.7986102,
+    "ast_hash": "a134398cc76e31256ab9729c185cfb1b",
+    "semantic_hash": "a134398cc76e31256ab9729c185cfb1b"
+  },
+  "firmware/hal/fm1_time.h": {
+    "mtime": 1793009924.0371406,
+    "seen": 1793649866.7986135,
+    "ast_hash": "0f06309b5f5889ce4840a85107d00468",
+    "semantic_hash": "0f06309b5f5889ce4840a85107d00468"
+  },
+  "firmware/hal/fm1_timer.h": {
+    "mtime": 1793009924.0371406,
+    "seen": 1793649866.7986166,
+    "ast_hash": "869eac03862f59eb764bcdb31ce0f61c",
+    "semantic_hash": "869eac03862f59eb764bcdb31ce0f61c"
+  },
+  "firmware/hal/fm1_uart.h": {
+    "mtime": 1793009924.0371406,
+    "seen": 1793649866.7986197,
+    "ast_hash": "6debeb427323f2e82fc3cf4e8ea9d6e1",
+    "semantic_hash": "6debeb427323f2e82fc3cf4e8ea9d6e1"
+  },
+  "firmware/hal/fm1_usb.h": {
+    "mtime": 1793009924.0371406,
+    "seen": 1793649866.7986226,
+    "ast_hash": "aecc6c429cb1120203d3e4b978b1ee6a",
+    "semantic_hash": "aecc6c429cb1120203d3e4b978b1ee6a"
+  },
+  "firmware/hal/fm1_xip.h": {
+    "mtime": 1793009924.0371406,
+    "seen": 1793649866.7986271,
+    "ast_hash": "c2a3d6e757b38b9f88982ca8b7559cf7",
+    "semantic_hash": "c2a3d6e757b38b9f88982ca8b7559cf7"
+  },
+  "firmware/host/preview.c": {
+    "mtime": 1793009924.0371406,
+    "seen": 1793649866.7986307,
+    "ast_hash": "8fbf0a3dc5d0c544b09c75e89e1a3ff3",
+    "semantic_hash": "8fbf0a3dc5d0c544b09c75e89e1a3ff3"
+  },
+  "firmware/loader/ldr_core.c": {
+    "mtime": 1793009924.03835,
+    "seen": 1793649866.798634,
+    "ast_hash": "b8f21ed256510e21ce80eb4c827b4d92",
+    "semantic_hash": "b8f21ed256510e21ce80eb4c827b4d92"
+  },
+  "firmware/loader/loader.c": {
+    "mtime": 1794057361.8350039,
+    "seen": 1794074405.483158,
+    "ast_hash": "c091a441b39fc2af1dbbd5696bddf5f2",
+    "semantic_hash": ""
+  },
+  "firmware/src/arranger.c": {
+    "mtime": 1793009924.0391414,
+    "seen": 1793649866.7986407,
+    "ast_hash": "355b70c9397f95a783f6c6890e165369",
+    "semantic_hash": "355b70c9397f95a783f6c6890e165369"
+  },
+  "firmware/src/arranger.h": {
+    "mtime": 1793009924.039758,
+    "seen": 1793649866.7986445,
+    "ast_hash": "eb59526996cef60cca88820b3eb1ee64",
+    "semantic_hash": "eb59526996cef60cca88820b3eb1ee64"
+  },
+  "firmware/src/arranger_scene.c": {
+    "mtime": 1794057361.8360038,
+    "seen": 1794074405.483162,
+    "ast_hash": "d31ad009f4c009260d501e979c13d127",
+    "semantic_hash": "d31ad009f4c009260d501e979c13d127"
+  },
+  "firmware/src/audio.c": {
+    "mtime": 1793651257.1840007,
+    "seen": 1794054524.8986473,
+    "ast_hash": "fa16a9c395d1cfcb5aaa7e362a6bd4d4",
+    "semantic_hash": "fa16a9c395d1cfcb5aaa7e362a6bd4d4"
+  },
+  "firmware/src/bootguard.h": {
+    "mtime": 1793009924.039758,
+    "seen": 1793649866.7986536,
+    "ast_hash": "edd186c0ecdae2ec127c5d0a1be22c0e",
+    "semantic_hash": "edd186c0ecdae2ec127c5d0a1be22c0e"
+  },
+  "firmware/src/console.c": {
+    "mtime": 1793647647.3584561,
+    "seen": 1793649866.7986567,
+    "ast_hash": "fc9de129041919b3c457daa52a27b398",
+    "semantic_hash": "fc9de129041919b3c457daa52a27b398"
+  },
+  "firmware/src/core.h": {
+    "mtime": 1794092217.9499846,
+    "seen": 1794093157.8624086,
+    "ast_hash": "19ad713faf05a0574cfede0a5e3c1de3",
+    "semantic_hash": ""
+  },
+  "firmware/src/cpu1.c": {
+    "mtime": 1793009924.040142,
+    "seen": 1793649866.7986627,
+    "ast_hash": "c328c0fd244d1e94532a68f9f527d3d6",
+    "semantic_hash": "c328c0fd244d1e94532a68f9f527d3d6"
+  },
+  "firmware/src/cpu1.h": {
+    "mtime": 1793009924.040142,
+    "seen": 1793649866.7986655,
+    "ast_hash": "5277424e6c679ae92a74b0643c37caf3",
+    "semantic_hash": "5277424e6c679ae92a74b0643c37caf3"
+  },
+  "firmware/src/drum_synth.c": {
+    "mtime": 1793009924.040142,
+    "seen": 1793649866.7986684,
+    "ast_hash": "9f58b12a546084717d7d405d89c6765c",
+    "semantic_hash": "9f58b12a546084717d7d405d89c6765c"
+  },
+  "firmware/src/drums.c": {
+    "mtime": 1793647647.3584561,
+    "seen": 1793649866.7986712,
+    "ast_hash": "722ec6399f00953d5120d226d450b17d",
+    "semantic_hash": "722ec6399f00953d5120d226d450b17d"
+  },
+  "firmware/src/dsp.c": {
+    "mtime": 1793647647.359456,
+    "seen": 1793649866.7986743,
+    "ast_hash": "4c59cd1abd14565006929e8a6891ecca",
+    "semantic_hash": "4c59cd1abd14565006929e8a6891ecca"
+  },
+  "firmware/src/editor.c": {
+    "mtime": 1794075435.3899918,
+    "seen": 1794076815.2186637,
+    "ast_hash": "d59d301b6c7c3b978bb8ecaea9e7ada1",
+    "semantic_hash": ""
+  },
+  "firmware/src/editor_dsyn.c": {
+    "mtime": 1793009924.0411425,
+    "seen": 1793649866.79868,
+    "ast_hash": "fd112847c3e133c6ed1fc291cc37d917",
+    "semantic_hash": "fd112847c3e133c6ed1fc291cc37d917"
+  },
+  "firmware/src/editor_fm6.c": {
+    "mtime": 1793009924.0411425,
+    "seen": 1793649866.798683,
+    "ast_hash": "81dbd11767413e995589b88c480b6a2b",
+    "semantic_hash": "81dbd11767413e995589b88c480b6a2b"
+  },
+  "firmware/src/editor_live.c": {
+    "mtime": 1793009924.0411425,
+    "seen": 1793649866.7986858,
+    "ast_hash": "89ecd8ab598dd6b219723301059f75bd",
+    "semantic_hash": "89ecd8ab598dd6b219723301059f75bd"
+  },
+  "firmware/src/eng_analog.c": {
+    "mtime": 1793647647.359456,
+    "seen": 1793649866.7986887,
+    "ast_hash": "70df67845f526a3337e6f8b5d6204fa9",
+    "semantic_hash": "70df67845f526a3337e6f8b5d6204fa9"
+  },
+  "firmware/src/eng_digital.c": {
+    "mtime": 1793647647.359456,
+    "seen": 1793649866.798693,
+    "ast_hash": "2f72432f013c3b864c6cbbc6fe8b6d80",
+    "semantic_hash": "2f72432f013c3b864c6cbbc6fe8b6d80"
+  },
+  "firmware/src/eng_drawbar.c": {
+    "mtime": 1793009924.042143,
+    "seen": 1793649866.7986956,
+    "ast_hash": "e32c9d19b441bea9740bb5fff9d90fd1",
+    "semantic_hash": "e32c9d19b441bea9740bb5fff9d90fd1"
+  },
+  "firmware/src/eng_fm6.c": {
+    "mtime": 1793647647.359456,
+    "seen": 1793649866.7986987,
+    "ast_hash": "ada3db9ed137756516733177383ca304",
+    "semantic_hash": "ada3db9ed137756516733177383ca304"
+  },
+  "firmware/src/eng_formant.c": {
+    "mtime": 1793009924.042143,
+    "seen": 1793649866.7987015,
+    "ast_hash": "d1bd5859b86c904caa946dc9a42362ea",
+    "semantic_hash": "d1bd5859b86c904caa946dc9a42362ea"
+  },
+  "firmware/src/eng_grain.c": {
+    "mtime": 1793647647.359456,
+    "seen": 1793649866.7987044,
+    "ast_hash": "78465fa0d96fbc344bd4b7aee69e692e",
+    "semantic_hash": "78465fa0d96fbc344bd4b7aee69e692e"
+  },
+  "firmware/src/eng_lofi.c": {
+    "mtime": 1793647647.3604562,
+    "seen": 1793649866.7987072,
+    "ast_hash": "919601077d1f80bfaac79d3e8a79aec1",
+    "semantic_hash": "919601077d1f80bfaac79d3e8a79aec1"
+  },
+  "firmware/src/eng_noise.c": {
+    "mtime": 1793647647.3604562,
+    "seen": 1793649866.79871,
+    "ast_hash": "fd32eed021b1eccab33ff87d64e6b6cd",
+    "semantic_hash": "fd32eed021b1eccab33ff87d64e6b6cd"
+  },
+  "firmware/src/eng_phase.c": {
+    "mtime": 1793647647.3604562,
+    "seen": 1793649866.7987134,
+    "ast_hash": "355ed89f03d10a07a3552ff322618d20",
+    "semantic_hash": "355ed89f03d10a07a3552ff322618d20"
+  },
+  "firmware/src/eng_phys.c": {
+    "mtime": 1793009924.0431435,
+    "seen": 1793649866.798716,
+    "ast_hash": "0f8e108405b417a929b6b402d9cbed96",
+    "semantic_hash": "0f8e108405b417a929b6b402d9cbed96"
+  },
+  "firmware/src/eng_sample.c": {
+    "mtime": 1793647647.3604562,
+    "seen": 1793649866.798719,
+    "ast_hash": "0c207345b156128b8134f7856f296a12",
+    "semantic_hash": "0c207345b156128b8134f7856f296a12"
+  },
+  "firmware/src/eng_slice.c": {
+    "mtime": 1793009924.0431435,
+    "seen": 1793649866.7987218,
+    "ast_hash": "04f1972d6a1e5ed2f30be26c038c8408",
+    "semantic_hash": "04f1972d6a1e5ed2f30be26c038c8408"
+  },
+  "firmware/src/eng_trio.c": {
+    "mtime": 1793647647.3604562,
+    "seen": 1793649866.798725,
+    "ast_hash": "973abeac09950bc7602e9cb9c9be36ab",
+    "semantic_hash": "973abeac09950bc7602e9cb9c9be36ab"
+  },
+  "firmware/src/engines.c": {
+    "mtime": 1793647647.3604562,
+    "seen": 1793649866.798728,
+    "ast_hash": "b34e18d423307418b40cb5105df15a28",
+    "semantic_hash": "b34e18d423307418b40cb5105df15a28"
+  },
+  "firmware/src/felucca.c": {
+    "mtime": 1793009924.044144,
+    "seen": 1793649866.7987309,
+    "ast_hash": "a4183faa69ff3d63010f52bfb614a4fb",
+    "semantic_hash": "a4183faa69ff3d63010f52bfb614a4fb"
+  },
+  "firmware/src/fm6_bank.c": {
+    "mtime": 1793009924.044144,
+    "seen": 1793649866.7987342,
+    "ast_hash": "7ffb004c76d000264ad08c9eeedd6294",
+    "semantic_hash": "7ffb004c76d000264ad08c9eeedd6294"
+  },
+  "firmware/src/fm6_core.c": {
+    "mtime": 1793009924.044144,
+    "seen": 1793649866.798737,
+    "ast_hash": "c6fab397eeec1d290c0a9d0dd2caa0d0",
+    "semantic_hash": "c6fab397eeec1d290c0a9d0dd2caa0d0"
+  },
+  "firmware/src/fx.c": {
+    "mtime": 1794092217.9520144,
+    "seen": 1794093157.8624587,
+    "ast_hash": "a9fe723ed28feb40d5d61618baaf15a4",
+    "semantic_hash": ""
+  },
+  "firmware/src/gfx.c": {
+    "mtime": 1793009924.0451446,
+    "seen": 1793649866.798743,
+    "ast_hash": "87cab4555a40e819f6b0ec9b94a51b1d",
+    "semantic_hash": "87cab4555a40e819f6b0ec9b94a51b1d"
+  },
+  "firmware/src/icons.c": {
+    "mtime": 1793009924.046145,
+    "seen": 1793649866.7987463,
+    "ast_hash": "fbba9344ec5a0f6a31660e19ff666e1d",
+    "semantic_hash": "fbba9344ec5a0f6a31660e19ff666e1d"
+  },
+  "firmware/src/lcd.c": {
+    "mtime": 1793009924.046145,
+    "seen": 1793649866.7987492,
+    "ast_hash": "f700bc2efa734ccc1b035becc2945a88",
+    "semantic_hash": "f700bc2efa734ccc1b035becc2945a88"
+  },
+  "firmware/src/libc.c": {
+    "mtime": 1793009924.046145,
+    "seen": 1793649866.798752,
+    "ast_hash": "72662aad463c71b8b18050fe9bb65a62",
+    "semantic_hash": "72662aad463c71b8b18050fe9bb65a62"
+  },
+  "firmware/src/main.c": {
+    "mtime": 1793651257.1840143,
+    "seen": 1794054524.901265,
+    "ast_hash": "162dd5740e5a49944e101f4c934cf4d2",
+    "semantic_hash": "162dd5740e5a49944e101f4c934cf4d2"
+  },
+  "firmware/src/midi_uart.c": {
+    "mtime": 1793647647.3614562,
+    "seen": 1793649866.7987576,
+    "ast_hash": "c5a398c757c84edb2d61f982548641e0",
+    "semantic_hash": "c5a398c757c84edb2d61f982548641e0"
+  },
+  "firmware/src/ota.c": {
+    "mtime": 1793009924.046145,
+    "seen": 1793649866.7987604,
+    "ast_hash": "2e2b71f34743a2de7591e1f7ce06c1a4",
+    "semantic_hash": "2e2b71f34743a2de7591e1f7ce06c1a4"
+  },
+  "firmware/src/panel.c": {
+    "mtime": 1794089701.430899,
+    "seen": 1794093157.8624701,
+    "ast_hash": "aa9631bfae89fb2acd5abffd14856a1b",
+    "semantic_hash": ""
+  },
+  "firmware/src/params.c": {
+    "mtime": 1794090295.3524737,
+    "seen": 1794093157.862473,
+    "ast_hash": "5a82081cf9c9989fccf5c9f0ccdc1c1b",
+    "semantic_hash": ""
+  },
+  "firmware/src/phys_dsp.c": {
+    "mtime": 1793647647.3624563,
+    "seen": 1793649866.7987692,
+    "ast_hash": "16e3708e10af6d77a72a39b9d8705547",
+    "semantic_hash": "16e3708e10af6d77a72a39b9d8705547"
+  },
+  "firmware/src/phys_symp.c": {
+    "mtime": 1793009924.048146,
+    "seen": 1793649866.7987719,
+    "ast_hash": "238ca8b023fc8af057e46d2104e8d0dd",
+    "semantic_hash": "238ca8b023fc8af057e46d2104e8d0dd"
+  },
+  "firmware/src/preset_trim.h": {
+    "mtime": 1793009924.048146,
+    "seen": 1793649866.798775,
+    "ast_hash": "ef0ae70ebc8ed313be8630686a07aa65",
+    "semantic_hash": "ef0ae70ebc8ed313be8630686a07aa65"
+  },
+  "firmware/src/project.c": {
+    "mtime": 1794092217.9543574,
+    "seen": 1794093157.8624797,
+    "ast_hash": "21aebdfb317f712e46c6678e63f80063",
+    "semantic_hash": ""
+  },
+  "firmware/src/punch.c": {
+    "mtime": 1794092217.9564147,
+    "seen": 1794093157.8624825,
+    "ast_hash": "88f5e88ff2b4259752d5dd68b0b94a16",
+    "semantic_hash": ""
+  },
+  "firmware/src/recovery.c": {
+    "mtime": 1794057361.8370035,
+    "seen": 1794074405.4832199,
+    "ast_hash": "a1a6b6d3acc1df725bd10931a4fc1fbe",
+    "semantic_hash": ""
+  },
+  "firmware/src/scratch.h": {
+    "mtime": 1793009924.0491464,
+    "seen": 1793649866.7987869,
+    "ast_hash": "7fa18162911f80a31332474a86eab1e8",
+    "semantic_hash": "7fa18162911f80a31332474a86eab1e8"
+  },
+  "firmware/src/seq.c": {
+    "mtime": 1794092217.9583304,
+    "seen": 1794093157.8624873,
+    "ast_hash": "3eb4d7f18a75c8d4c269c2d88235afea",
+    "semantic_hash": ""
+  },
+  "firmware/src/slicer.c": {
+    "mtime": 1793009924.0511475,
+    "seen": 1793649866.7987924,
+    "ast_hash": "09ca836190fecdfdfb94cd80c4b3fafd",
+    "semantic_hash": "09ca836190fecdfdfb94cd80c4b3fafd"
+  },
+  "firmware/src/splash.c": {
+    "mtime": 1793009924.0511475,
+    "seen": 1793649866.798796,
+    "ast_hash": "eb7a9dcc336408b05944eb8772bd98dc",
+    "semantic_hash": "eb7a9dcc336408b05944eb8772bd98dc"
+  },
+  "firmware/src/storage.c": {
+    "mtime": 1794091158.8198597,
+    "seen": 1794093157.862493,
+    "ast_hash": "79232c4c522eca5c2b9cca8fd7d55bb7",
+    "semantic_hash": ""
+  },
+  "firmware/src/uac_fir.h": {
+    "mtime": 1793009924.0511475,
+    "seen": 1793649866.7988024,
+    "ast_hash": "1a723ea213d7ca2bd837bd82110b57ff",
+    "semantic_hash": "1a723ea213d7ca2bd837bd82110b57ff"
+  },
+  "firmware/src/ui.c": {
+    "mtime": 1794090290.8327224,
+    "seen": 1794093157.8624966,
+    "ast_hash": "41f5769921806621a4839034ccfdb7de",
+    "semantic_hash": ""
+  },
+  "firmware/src/ui_draw.c": {
+    "mtime": 1794092217.9598045,
+    "seen": 1794093157.8624988,
+    "ast_hash": "af4c5f6886bc9f9b3bbb092b7dafac91",
+    "semantic_hash": ""
+  },
+  "firmware/src/ui_input.c": {
+    "mtime": 1794092217.9622817,
+    "seen": 1794093157.8625016,
+    "ast_hash": "294a0b2aa95f0deccfd10417d024f490",
+    "semantic_hash": ""
+  },
+  "firmware/src/ui_layers.c": {
+    "mtime": 1794090543.0601268,
+    "seen": 1794093157.8625042,
+    "ast_hash": "925792e781d70b5725495a72e5786133",
+    "semantic_hash": ""
+  },
+  "firmware/src/ui_menu.c": {
+    "mtime": 1793009924.0531485,
+    "seen": 1793649866.7988174,
+    "ast_hash": "48da5d614b9fdd3ff18754e5ce1205ec",
+    "semantic_hash": "48da5d614b9fdd3ff18754e5ce1205ec"
+  },
+  "firmware/src/ui_song.c": {
+    "mtime": 1793647647.3665664,
+    "seen": 1793649866.7988217,
+    "ast_hash": "a8ddc18c7df32cccc4cc9d7efebeb063",
+    "semantic_hash": "a8ddc18c7df32cccc4cc9d7efebeb063"
+  },
+  "firmware/src/ui_studio.c": {
+    "mtime": 1793009924.0531485,
+    "seen": 1793649866.7988245,
+    "ast_hash": "544a55905d35f0c8bd7b3c1fc15e17af",
+    "semantic_hash": "544a55905d35f0c8bd7b3c1fc15e17af"
+  },
+  "firmware/src/ui_vis.c": {
+    "mtime": 1794092217.964235,
+    "seen": 1794093157.8625112,
+    "ast_hash": "77d79694eced3d5220cd8f9d1a5629c5",
+    "semantic_hash": ""
+  },
+  "firmware/src/upreset.c": {
+    "mtime": 1794092217.9905295,
+    "seen": 1794093157.862514,
+    "ast_hash": "46fd77694d8262b3ad6cb19998ae1a2f",
+    "semantic_hash": ""
+  },
+  "firmware/src/usb.c": {
+    "mtime": 1793647647.3665664,
+    "seen": 1793649866.7988334,
+    "ast_hash": "30bfc5112791e8c99ea82c81a75bf64c",
+    "semantic_hash": "30bfc5112791e8c99ea82c81a75bf64c"
+  },
+  "firmware/src/voice.c": {
+    "mtime": 1794090228.6091523,
+    "seen": 1794093157.862518,
+    "ast_hash": "46205942a19c4bd3bbb6244a63848dc8",
+    "semantic_hash": ""
+  },
+  "tests/_cap26.c": {
+    "mtime": 1793009924.0551496,
+    "seen": 1793649866.798839,
+    "ast_hash": "486a48c9ef22de339f0dc6c27c6cbad6",
+    "semantic_hash": "486a48c9ef22de339f0dc6c27c6cbad6"
+  },
+  "tests/arena_test.c": {
+    "mtime": 1793009924.0558212,
+    "seen": 1793649866.798842,
+    "ast_hash": "5d01c26d3da102542e646c540b92b7bb",
+    "semantic_hash": "5d01c26d3da102542e646c540b92b7bb"
+  },
+  "tests/arranger_test.c": {
+    "mtime": 1793009924.0558212,
+    "seen": 1793649866.7988448,
+    "ast_hash": "0d6feb18be54001ce3c71100404bf74b",
+    "semantic_hash": "0d6feb18be54001ce3c71100404bf74b"
+  },
+  "tests/boot_sound_test.c": {
+    "mtime": 1793647647.3665664,
+    "seen": 1793649866.7988477,
+    "ast_hash": "7c6448daf06f3c630a14f34dc1f8b580",
+    "semantic_hash": "7c6448daf06f3c630a14f34dc1f8b580"
+  },
+  "tests/chop_attack_test.c": {
+    "mtime": 1793647647.3665664,
+    "seen": 1793649866.7988508,
+    "ast_hash": "c457d3eada9ac7a6dee6acfce4309e05",
+    "semantic_hash": "c457d3eada9ac7a6dee6acfce4309e05"
+  },
+  "tests/cpu1_host.c": {
+    "mtime": 1793009924.0558212,
+    "seen": 1793649866.7988534,
+    "ast_hash": "1e8cacb9a3b34d133f9df3702c29fe7b",
+    "semantic_hash": "1e8cacb9a3b34d133f9df3702c29fe7b"
+  },
+  "tests/cpu1_modes.sh": {
+    "mtime": 1793009924.0558212,
+    "seen": 1793649866.7988563,
+    "ast_hash": "8746e88ec0a87ba2589ce2dca9ab458c",
+    "semantic_hash": "8746e88ec0a87ba2589ce2dca9ab458c"
+  },
+  "tests/cpu1_test.c": {
+    "mtime": 1793009924.0558212,
+    "seen": 1793649866.7988594,
+    "ast_hash": "7ed71d2e2f4685aa8b514be403707cf8",
+    "semantic_hash": "7ed71d2e2f4685aa8b514be403707cf8"
+  },
+  "tests/drum_level.c": {
+    "mtime": 1793009924.0558212,
+    "seen": 1793649866.7988622,
+    "ast_hash": "634fb7b13331970cb80baab1977af054",
+    "semantic_hash": "634fb7b13331970cb80baab1977af054"
+  },
+  "tests/drum_steal_test.c": {
+    "mtime": 1793647647.3665664,
+    "seen": 1793649866.798865,
+    "ast_hash": "a407e4ddb3e5d159d3793865093e02e1",
+    "semantic_hash": "a407e4ddb3e5d159d3793865093e02e1"
+  },
+  "tests/drumkit_test.c": {
+    "mtime": 1793009924.05615,
+    "seen": 1793649866.798868,
+    "ast_hash": "4000715214a055ce1e9ba14f719da78f",
+    "semantic_hash": "4000715214a055ce1e9ba14f719da78f"
+  },
+  "tests/dsyn_test.c": {
+    "mtime": 1793647647.3674564,
+    "seen": 1793649866.798871,
+    "ast_hash": "9f3d5bd7fe85770cef5eafd76f19dc1a",
+    "semantic_hash": "9f3d5bd7fe85770cef5eafd76f19dc1a"
+  },
+  "tests/editor_fuzz.c": {
+    "mtime": 1794093073.8999226,
+    "seen": 1794093157.8625357,
+    "ast_hash": "2b7a2379315b669475bb656605620b75",
+    "semantic_hash": ""
+  },
+  "tests/editor_fuzz.sh": {
+    "mtime": 1793647647.368788,
+    "seen": 1793649866.798877,
+    "ast_hash": "5ae89677de3e77a800f8fdf2ccf833b9",
+    "semantic_hash": "5ae89677de3e77a800f8fdf2ccf833b9"
+  },
+  "tests/editor_host.c": {
+    "mtime": 1794071727.509891,
+    "seen": 1794074405.4832613,
+    "ast_hash": "9df83134bf5927ef923ef4fcb9012938",
+    "semantic_hash": ""
+  },
+  "tests/editor_repro.c": {
+    "mtime": 1793647647.368788,
+    "seen": 1793649866.7988825,
+    "ast_hash": "a79cd8db2bf177af4492fee42cf774dc",
+    "semantic_hash": "a79cd8db2bf177af4492fee42cf774dc"
+  },
+  "tests/encoder_test.c": {
+    "mtime": 1793009924.05615,
+    "seen": 1793649866.7988856,
+    "ast_hash": "b7e03573261bd9853d5002daf95b6bda",
+    "semantic_hash": "b7e03573261bd9853d5002daf95b6bda"
+  },
+  "tests/fade_noise_test.c": {
+    "mtime": 1793647647.368788,
+    "seen": 1793649866.7988884,
+    "ast_hash": "b0eafaa19bd9a9415d3dade7a6514dd3",
+    "semantic_hash": "b0eafaa19bd9a9415d3dade7a6514dd3"
+  },
+  "tests/fm6_test.c": {
+    "mtime": 1793009924.05615,
+    "seen": 1793649866.7988913,
+    "ast_hash": "654c3757b892ca66ab40947a00a54b4a",
+    "semantic_hash": "654c3757b892ca66ab40947a00a54b4a"
+  },
+  "tests/font_test.c": {
+    "mtime": 1793009924.05615,
+    "seen": 1793649866.7988942,
+    "ast_hash": "4dce2e2b3b5ba2eeecb52daf0d0030a7",
+    "semantic_hash": "4dce2e2b3b5ba2eeecb52daf0d0030a7"
+  },
+  "tests/fx251_test.c": {
+    "mtime": 1793009924.05615,
+    "seen": 1793649866.7988973,
+    "ast_hash": "b02ee073016cd5de587b015b563c230a",
+    "semantic_hash": "b02ee073016cd5de587b015b563c230a"
+  },
+  "tests/grain_release_test.c": {
+    "mtime": 1793647647.368788,
+    "seen": 1793649866.7989,
+    "ast_hash": "e9b27e124090a081927f870258c7c4e6",
+    "semantic_hash": "e9b27e124090a081927f870258c7c4e6"
+  },
+  "tests/hold_rec_test.c": {
+    "mtime": 1793647647.368788,
+    "seen": 1793649866.7989028,
+    "ast_hash": "c63abae1c9d2402fab283e2b71b1d4b8",
+    "semantic_hash": "c63abae1c9d2402fab283e2b71b1d4b8"
+  },
+  "tests/hostsim.c": {
+    "mtime": 1793009924.0571506,
+    "seen": 1793649866.7989058,
+    "ast_hash": "ec04f25b99ab2456c8629fcac2b6af46",
+    "semantic_hash": "ec04f25b99ab2456c8629fcac2b6af46"
+  },
+  "tests/install_test.py": {
+    "mtime": 1793009924.0571506,
+    "seen": 1793649866.7989092,
+    "ast_hash": "03669512359a82c10a7f8893bb3b67bf",
+    "semantic_hash": "03669512359a82c10a7f8893bb3b67bf"
+  },
+  "tests/knob_walk_test.c": {
+    "mtime": 1794074091.4643695,
+    "seen": 1794074405.4832802,
+    "ast_hash": "ac776f2801c95a5388b21d5cd310b2dc",
+    "semantic_hash": ""
+  },
+  "tests/ldr_test.c": {
+    "mtime": 1793009924.058151,
+    "seen": 1793649866.7989147,
+    "ast_hash": "1917bfa7b81ae4a28e5d3086f479d148",
+    "semantic_hash": "1917bfa7b81ae4a28e5d3086f479d148"
+  },
+  "tests/len_test.c": {
+    "mtime": 1794089994.7647479,
+    "seen": 1794093157.8625634,
+    "ast_hash": "ee12587bce6a2b65759492ef541e0953",
+    "semantic_hash": ""
+  },
+  "tests/midi_uart_test.c": {
+    "mtime": 1793009924.058151,
+    "seen": 1793649866.7989209,
+    "ast_hash": "22073bcb20cacf3ae71f3c311c9a5c6b",
+    "semantic_hash": "22073bcb20cacf3ae71f3c311c9a5c6b"
+  },
+  "tests/mix_split_test.c": {
+    "mtime": 1793009924.058151,
+    "seen": 1793649866.7989237,
+    "ast_hash": "8bd8661dbf74bccd25198cada0f2a88d",
+    "semantic_hash": "8bd8661dbf74bccd25198cada0f2a88d"
+  },
+  "tests/noise_clock_test.c": {
+    "mtime": 1793647647.368788,
+    "seen": 1793649866.7989268,
+    "ast_hash": "130c8b8007851242e50bf60ed1f7f095",
+    "semantic_hash": "130c8b8007851242e50bf60ed1f7f095"
+  },
+  "tests/ota_test.c": {
+    "mtime": 1793009924.058151,
+    "seen": 1793649866.79893,
+    "ast_hash": "a1c53afa4d52d4e8e434be46ffd79eb5",
+    "semantic_hash": "a1c53afa4d52d4e8e434be46ffd79eb5"
+  },
+  "tests/phys_tune_test.c": {
+    "mtime": 1793647647.368788,
+    "seen": 1793649866.7989328,
+    "ast_hash": "9ddd1c6664b6b60c4f00dec1d06997d3",
+    "semantic_hash": "9ddd1c6664b6b60c4f00dec1d06997d3"
+  },
+  "tests/pitch.py": {
+    "mtime": 1793009924.058151,
+    "seen": 1793649866.7989357,
+    "ast_hash": "248605a6e76681a65a8bc86426e18ddd",
+    "semantic_hash": "248605a6e76681a65a8bc86426e18ddd"
+  },
+  "tests/preset_level.c": {
+    "mtime": 1793009924.058151,
+    "seen": 1793649866.7989385,
+    "ast_hash": "c2a5f89eb4722b06a0c1d5696a2a4b9d",
+    "semantic_hash": "c2a5f89eb4722b06a0c1d5696a2a4b9d"
+  },
+  "tests/preview_native.c": {
+    "mtime": 1793009924.058151,
+    "seen": 1793649866.7989414,
+    "ast_hash": "abbaa672f661af0f6fb74559db64e6da",
+    "semantic_hash": "abbaa672f661af0f6fb74559db64e6da"
+  },
+  "tests/preview_test.mjs": {
+    "mtime": 1793009924.058151,
+    "seen": 1793649866.7989442,
+    "ast_hash": "7f7866cdb5c9468d58f4ea1e06985588",
+    "semantic_hash": "7f7866cdb5c9468d58f4ea1e06985588"
+  },
+  "tests/project_test.c": {
+    "mtime": 1793009924.058151,
+    "seen": 1793649866.7989473,
+    "ast_hash": "ca3d5f16bd68893b1fd1af4b97356534",
+    "semantic_hash": "ca3d5f16bd68893b1fd1af4b97356534"
+  },
+  "tests/punch_test.c": {
+    "mtime": 1793009924.0591514,
+    "seen": 1793649866.7989504,
+    "ast_hash": "c3a3257d5d42a363fae5db7ee6b23180",
+    "semantic_hash": "c3a3257d5d42a363fae5db7ee6b23180"
+  },
+  "tests/pwa_test.mjs": {
+    "mtime": 1793009924.0591514,
+    "seen": 1793649866.7989533,
+    "ast_hash": "d3201ea962d230d0dbeee5011efa5012",
+    "semantic_hash": "d3201ea962d230d0dbeee5011efa5012"
+  },
+  "tests/recovery_test.c": {
+    "mtime": 1794057361.840003,
+    "seen": 1794074405.4832995,
+    "ast_hash": "a8b1bf4754d6edc9e5ccac5acb40af70",
+    "semantic_hash": ""
+  },
+  "tests/regress.c": {
+    "mtime": 1793009924.0591514,
+    "seen": 1793649866.798959,
+    "ast_hash": "f226b7734067ce613f0db25a3e27b3c8",
+    "semantic_hash": "f226b7734067ce613f0db25a3e27b3c8"
+  },
+  "tests/run_preview_tests.sh": {
+    "mtime": 1793009924.0591514,
+    "seen": 1793649866.798962,
+    "ast_hash": "753a939faa8a3b92796695fa935e7525",
+    "semantic_hash": "753a939faa8a3b92796695fa935e7525"
+  },
+  "tests/run_tests.sh": {
+    "mtime": 1794075687.862743,
+    "seen": 1794076815.2187984,
+    "ast_hash": "149389e9e1e5acf9490fdf7b6bc4aeae",
+    "semantic_hash": ""
+  },
+  "tests/sample_pitch_test.c": {
+    "mtime": 1793647647.370259,
+    "seen": 1793649866.7989678,
+    "ast_hash": "489a25063d21ff13127dd034ad0646c2",
+    "semantic_hash": "489a25063d21ff13127dd034ad0646c2"
+  },
+  "tests/scale_test.c": {
+    "mtime": 1793009924.060152,
+    "seen": 1793649866.798971,
+    "ast_hash": "583965e4c0d9d47a81e72705ffda482b",
+    "semantic_hash": "583965e4c0d9d47a81e72705ffda482b"
+  },
+  "tests/seq2_test.c": {
+    "mtime": 1793647647.370259,
+    "seen": 1793649866.7989733,
+    "ast_hash": "dfc6725edd5ca597250f10bdaa8b23aa",
+    "semantic_hash": "dfc6725edd5ca597250f10bdaa8b23aa"
+  },
+  "tests/site_test.py": {
+    "mtime": 1793009924.0611525,
+    "seen": 1793649866.7989762,
+    "ast_hash": "3c1f4cdba6cf80ee7db9e3c8287028ca",
+    "semantic_hash": "3c1f4cdba6cf80ee7db9e3c8287028ca"
+  },
+  "tests/slice_loop.py": {
+    "mtime": 1793009924.0611525,
+    "seen": 1793649866.798979,
+    "ast_hash": "0e03dd53ca16e010d891704c7beec78d",
+    "semantic_hash": "0e03dd53ca16e010d891704c7beec78d"
+  },
+  "tests/slice_test.c": {
+    "mtime": 1793009924.0611525,
+    "seen": 1793649866.798982,
+    "ast_hash": "96e6b3090c6323f4e8e3db2b367a68bf",
+    "semantic_hash": "96e6b3090c6323f4e8e3db2b367a68bf"
+  },
+  "tests/slicer_test.c": {
+    "mtime": 1793009924.0611525,
+    "seen": 1793649866.7989848,
+    "ast_hash": "cac7db5c21c9b4624194921bc8b6429c",
+    "semantic_hash": "cac7db5c21c9b4624194921bc8b6429c"
+  },
+  "tests/soak_test.c": {
+    "mtime": 1793009924.0611525,
+    "seen": 1793649866.7989879,
+    "ast_hash": "5686b24b9b2bc9b5c3b42d1abba030fb",
+    "semantic_hash": "5686b24b9b2bc9b5c3b42d1abba030fb"
+  },
+  "tests/song_arm_test.c": {
+    "mtime": 1793647647.370259,
+    "seen": 1793649866.7989905,
+    "ast_hash": "df388568f7f0ef50de8b96f8824836f6",
+    "semantic_hash": "df388568f7f0ef50de8b96f8824836f6"
+  },
+  "tests/song_audio_test.c": {
+    "mtime": 1793009924.0611525,
+    "seen": 1793649866.7989933,
+    "ast_hash": "dc27d577a6776848b7ce552557cb5c3a",
+    "semantic_hash": "dc27d577a6776848b7ce552557cb5c3a"
+  },
+  "tests/song_ui_test.c": {
+    "mtime": 1793009924.0611525,
+    "seen": 1793649866.7989964,
+    "ast_hash": "416304f2e0844d91be72e5910cda4007",
+    "semantic_hash": "416304f2e0844d91be72e5910cda4007"
+  },
+  "tests/storage_test.c": {
+    "mtime": 1794091158.8202932,
+    "seen": 1794093157.8625991,
+    "ast_hash": "99533abce62b3335eb32fb0fa04b684b",
+    "semantic_hash": ""
+  },
+  "tests/stress_test.c": {
+    "mtime": 1794092217.9983249,
+    "seen": 1794093157.8626015,
+    "ast_hash": "295a32a7008db8009bb8a962c8280d59",
+    "semantic_hash": ""
+  },
+  "tests/studio_drums_test.c": {
+    "mtime": 1793009924.062153,
+    "seen": 1793649866.799005,
+    "ast_hash": "167789aa547c90737bcb05bbf7acbd27",
+    "semantic_hash": "167789aa547c90737bcb05bbf7acbd27"
+  },
+  "tests/target_budget.py": {
+    "mtime": 1793009924.062153,
+    "seen": 1793649866.799008,
+    "ast_hash": "8b231527bdcd35541eb2d2aa91c56e97",
+    "semantic_hash": "8b231527bdcd35541eb2d2aa91c56e97"
+  },
+  "tests/uac_test.c": {
+    "mtime": 1793009924.062153,
+    "seen": 1793649866.7990108,
+    "ast_hash": "aaea7301732fe75623c1edf04b54133e",
+    "semantic_hash": "aaea7301732fe75623c1edf04b54133e"
+  },
+  "tests/ui_pages_test.c": {
+    "mtime": 1794092217.9998047,
+    "seen": 1794093157.8626082,
+    "ast_hash": "274d2f40ee2225a3c3cb8d87f7b9c3ef",
+    "semantic_hash": ""
+  },
+  "tests/unison_level_test.c": {
+    "mtime": 1793647647.3704567,
+    "seen": 1793649866.7990167,
+    "ast_hash": "2e0dd5c8f432bf0012c4560726775bc6",
+    "semantic_hash": "2e0dd5c8f432bf0012c4560726775bc6"
+  },
+  "tests/upreset_test.c": {
+    "mtime": 1794092218.0038047,
+    "seen": 1794093157.8626142,
+    "ast_hash": "7d1ec9ac806cffe933c3ca66b54f3192",
+    "semantic_hash": ""
+  },
+  "tests/userkit_test.c": {
+    "mtime": 1793009924.0631535,
+    "seen": 1793649866.7990224,
+    "ast_hash": "a38b92cef8b7ef5bc3d4a8d7a1ae6fe4",
+    "semantic_hash": "a38b92cef8b7ef5bc3d4a8d7a1ae6fe4"
+  },
+  "tools/build.py": {
+    "mtime": 1793009924.0631535,
+    "seen": 1793649866.7990253,
+    "ast_hash": "45d4219b31c6d782e455e3d78eb77ada",
+    "semantic_hash": "45d4219b31c6d782e455e3d78eb77ada"
+  },
+  "tools/build_preview.py": {
+    "mtime": 1793009924.064154,
+    "seen": 1793649866.7990282,
+    "ast_hash": "e47067c4f670653db6505a65a083ac1d",
+    "semantic_hash": "e47067c4f670653db6505a65a083ac1d"
+  },
+  "tools/build_windows.py": {
+    "mtime": 1793009924.064154,
+    "seen": 1793649866.799031,
+    "ast_hash": "0a16ca36ef592046cea899e10221026f",
+    "semantic_hash": "0a16ca36ef592046cea899e10221026f"
+  },
+  "tools/drumkit_levels.json": {
+    "mtime": 1793009924.064154,
+    "seen": 1793649866.799034,
+    "ast_hash": "e67e5ffc2d5765f144a0aa496cf592c3",
+    "semantic_hash": "e67e5ffc2d5765f144a0aa496cf592c3"
+  },
+  "tools/fetch_cc0.py": {
+    "mtime": 1793009924.064154,
+    "seen": 1793649866.799037,
+    "ast_hash": "46714e4d325a30cbbc5dcd09ac44db40",
+    "semantic_hash": "46714e4d325a30cbbc5dcd09ac44db40"
+  },
+  "tools/fm1_install.py": {
+    "mtime": 1793009924.064154,
+    "seen": 1793649866.7990398,
+    "ast_hash": "616760e36c46527fcbcc7405bdc0eedf",
+    "semantic_hash": "616760e36c46527fcbcc7405bdc0eedf"
+  },
+  "tools/fm1_sample_upload.py": {
+    "mtime": 1793009924.064154,
+    "seen": 1793649866.7990425,
+    "ast_hash": "520d2e27c6985f5afe7bcde63d7e7494",
+    "semantic_hash": "520d2e27c6985f5afe7bcde63d7e7494"
+  },
+  "tools/fm1pkg_make.py": {
+    "mtime": 1793009924.064154,
+    "seen": 1793649866.7990453,
+    "ast_hash": "a7f1fd8bba2e641878e39732909b335a",
+    "semantic_hash": "a7f1fd8bba2e641878e39732909b335a"
+  },
+  "tools/gen_builtin_hiphop.py": {
+    "mtime": 1793009924.064154,
+    "seen": 1793649866.7990484,
+    "ast_hash": "f1acc4b26497dd4a9991584981aa762b",
+    "semantic_hash": "f1acc4b26497dd4a9991584981aa762b"
+  },
+  "tools/gen_drumkits.py": {
+    "mtime": 1793009924.064154,
+    "seen": 1793649866.7990513,
+    "ast_hash": "c37b2d5ae599e52c0b03f7881b4afb62",
+    "semantic_hash": "c37b2d5ae599e52c0b03f7881b4afb62"
+  },
+  "tools/gen_fm6_patches.py": {
+    "mtime": 1793009924.0651546,
+    "seen": 1793649866.7990544,
+    "ast_hash": "6ee8fe7b9b7b632def209632b9186473",
+    "semantic_hash": "6ee8fe7b9b7b632def209632b9186473"
+  },
+  "tools/gen_font.py": {
+    "mtime": 1793009924.0651546,
+    "seen": 1793649866.7990572,
+    "ast_hash": "acd54d4d5c56b87fd1481dd1dca0f97e",
+    "semantic_hash": "acd54d4d5c56b87fd1481dd1dca0f97e"
+  },
+  "tools/gen_hiphop_pack.py": {
+    "mtime": 1793009924.0651546,
+    "seen": 1793649866.79906,
+    "ast_hash": "eb82d042181f33b421d53e3eb78f1039",
+    "semantic_hash": "eb82d042181f33b421d53e3eb78f1039"
+  },
+  "tools/gen_icons.py": {
+    "mtime": 1793009924.0651546,
+    "seen": 1793649866.7990632,
+    "ast_hash": "a1bcfbb5250e288e4f0c9b4355236a7d",
+    "semantic_hash": "a1bcfbb5250e288e4f0c9b4355236a7d"
+  },
+  "tools/gen_logo.py": {
+    "mtime": 1793009924.0651546,
+    "seen": 1793649866.7990663,
+    "ast_hash": "06854a2b4f745215dc94b48117d9eb23",
+    "semantic_hash": "06854a2b4f745215dc94b48117d9eb23"
+  },
+  "tools/gen_samples.py": {
+    "mtime": 1793009924.0651546,
+    "seen": 1793649866.7990723,
+    "ast_hash": "13094328fe7df57aa9520db09a86a685",
+    "semantic_hash": "13094328fe7df57aa9520db09a86a685"
+  },
+  "tools/gen_tables.py": {
+    "mtime": 1793009924.0651546,
+    "seen": 1793649866.7990754,
+    "ast_hash": "937e47a8e2bd3ea65f439028699a1c8b",
+    "semantic_hash": "937e47a8e2bd3ea65f439028699a1c8b"
+  },
+  "tools/gen_uac_fir.py": {
+    "mtime": 1793009924.066155,
+    "seen": 1793649866.7990782,
+    "ast_hash": "8a3c61c288578e8ead02708bdf6f92c9",
+    "semantic_hash": "8a3c61c288578e8ead02708bdf6f92c9"
+  },
+  "tools/gen_waves.py": {
+    "mtime": 1793009924.066155,
+    "seen": 1793649866.7990813,
+    "ast_hash": "549580f33cf6efbc599997d249864930",
+    "semantic_hash": "549580f33cf6efbc599997d249864930"
+  },
+  "tools/gen_webfont.py": {
+    "mtime": 1793009924.066155,
+    "seen": 1793649866.799084,
+    "ast_hash": "8e6b46e96c793a544c981496f5d9b990",
+    "semantic_hash": "8e6b46e96c793a544c981496f5d9b990"
+  },
+  "tools/get_toolchain.sh": {
+    "mtime": 1793651257.186628,
+    "seen": 1794054524.908894,
+    "ast_hash": "35306b7a88427a34577c3663cc318a08",
+    "semantic_hash": "35306b7a88427a34577c3663cc318a08"
+  },
+  "tools/level_drumkits.py": {
+    "mtime": 1793009924.066155,
+    "seen": 1793649866.7990901,
+    "ast_hash": "9fb33859c7492b98b2e6ac6897c9f452",
+    "semantic_hash": "9fb33859c7492b98b2e6ac6897c9f452"
+  },
+  "tools/level_presets.py": {
+    "mtime": 1793009924.066155,
+    "seen": 1793649866.799093,
+    "ast_hash": "2d0b7d78904e4c676cf2ac2afdb81b1c",
+    "semantic_hash": "2d0b7d78904e4c676cf2ac2afdb81b1c"
+  },
+  "tools/lz4blk.py": {
+    "mtime": 1793009924.066155,
+    "seen": 1793649866.7990959,
+    "ast_hash": "f6400f9c90039e4d2970bc18a4089c3e",
+    "semantic_hash": "f6400f9c90039e4d2970bc18a4089c3e"
+  },
+  "tools/make_quickguide.py": {
+    "mtime": 1793009924.066155,
+    "seen": 1793649866.799099,
+    "ast_hash": "3ecf8265ad6709014c542f002d66de87",
+    "semantic_hash": "3ecf8265ad6709014c542f002d66de87"
+  },
+  "tools/sampleio.py": {
+    "mtime": 1793009924.066155,
+    "seen": 1793649866.7991016,
+    "ast_hash": "159f534bfca924ae8a1820b58e99c14f",
+    "semantic_hash": "159f534bfca924ae8a1820b58e99c14f"
+  },
+  "tools/wasm_shim/mem.c": {
+    "mtime": 1793009924.066155,
+    "seen": 1793649866.7991045,
+    "ast_hash": "eb127c7285f151c8f787758856c2a769",
+    "semantic_hash": "eb127c7285f151c8f787758856c2a769"
+  },
+  "tools/wasm_shim/string.h": {
+    "mtime": 1793009924.0672655,
+    "seen": 1793649866.7991073,
+    "ast_hash": "149758f9682970614745f0b1e9065e77",
+    "semantic_hash": "149758f9682970614745f0b1e9065e77"
+  },
+  "web/fm1ota.js": {
+    "mtime": 1793009924.068156,
+    "seen": 1793649866.7991104,
+    "ast_hash": "34c54568967354a08384690db04371c5",
+    "semantic_hash": "34c54568967354a08384690db04371c5"
+  },
+  "web/fm1pkg.js": {
+    "mtime": 1793009924.068156,
+    "seen": 1793649866.7991133,
+    "ast_hash": "825e9f6a85fa6679631afba796a7ab98",
+    "semantic_hash": "825e9f6a85fa6679631afba796a7ab98"
+  },
+  "web/make_site.py": {
+    "mtime": 1793009924.070157,
+    "seen": 1793649866.7991164,
+    "ast_hash": "5ba7a6c3fba52d1ce4fa9ced54c9b824",
+    "semantic_hash": "5ba7a6c3fba52d1ce4fa9ced54c9b824"
+  },
+  "web/package.json": {
+    "mtime": 1793009924.070157,
+    "seen": 1793649866.7991195,
+    "ast_hash": "07613765e9341a0662911bdef9f5bb2b",
+    "semantic_hash": "07613765e9341a0662911bdef9f5bb2b"
+  },
+  "web/preview-worklet.js": {
+    "mtime": 1793009924.070157,
+    "seen": 1793649866.7991223,
+    "ast_hash": "b5c5be2ffbf482d486113a7a72e82673",
+    "semantic_hash": "b5c5be2ffbf482d486113a7a72e82673"
+  },
+  "web/preview.js": {
+    "mtime": 1793009924.070157,
+    "seen": 1793649866.7991254,
+    "ast_hash": "87936f81b092fb94268e7de515a389af",
+    "semantic_hash": "87936f81b092fb94268e7de515a389af"
+  },
+  "web/sw.js": {
+    "mtime": 1793009924.070157,
+    "seen": 1793649866.7991283,
+    "ast_hash": "294100a46264db345e2e1df103e52303",
+    "semantic_hash": "294100a46264db345e2e1df103e52303"
+  },
+  "web/test_web.mjs": {
+    "mtime": 1793009924.0711575,
+    "seen": 1793649866.7991314,
+    "ast_hash": "65876fc79f8a10769468d7eca976976d",
+    "semantic_hash": "65876fc79f8a10769468d7eca976976d"
+  },
+  "BUILDING.md": {
+    "mtime": 1793009923.9390914,
+    "seen": 1793649866.7991345,
+    "ast_hash": "e97dae1b5350d80cf57cc65a76cae083",
+    "semantic_hash": "e97dae1b5350d80cf57cc65a76cae083"
+  },
+  "DEMARRAGE-RAPIDE-FR.md": {
+    "mtime": 1794091314.4859397,
+    "seen": 1794093157.8626657,
+    "ast_hash": "e130e8550cb9db25acfc1cd59504c476",
+    "semantic_hash": ""
+  },
+  "DUALCORE.md": {
+    "mtime": 1793647647.337455,
+    "seen": 1793649866.799141,
+    "ast_hash": "aaea13407fa71f610ee210a7788b4b34",
+    "semantic_hash": "aaea13407fa71f610ee210a7788b4b34"
+  },
+  "GUIDE.md": {
+    "mtime": 1794091314.4855928,
+    "seen": 1794093157.862669,
+    "ast_hash": "174b0ba50e9faa26bc87265fcb86e6be",
+    "semantic_hash": ""
+  },
+  "LICENSING.md": {
+    "mtime": 1793009923.9410925,
+    "seen": 1793649866.7991467,
+    "ast_hash": "b8ad6d8572926c2dc97c56a86cbb1add",
+    "semantic_hash": "b8ad6d8572926c2dc97c56a86cbb1add"
+  },
+  "RAM.md": {
+    "mtime": 1793009923.942093,
+    "seen": 1793649866.7991498,
+    "ast_hash": "ad6eea062fd7e86d9b3479579f614b9f",
+    "semantic_hash": "ad6eea062fd7e86d9b3479579f614b9f"
+  },
+  "README.md": {
+    "mtime": 1794090388.621734,
+    "seen": 1794093157.8626757,
+    "ast_hash": "c9cf347a2c7c487eb4dbc354f57eeced",
+    "semantic_hash": ""
+  },
+  "SLOOP.md": {
+    "mtime": 1794090404.7037196,
+    "seen": 1794093157.8626785,
+    "ast_hash": "dcaec4fe7b9c55798fc533bfa3890526",
+    "semantic_hash": ""
+  },
+  "web/EDITOR_PROTOCOL.md": {
+    "mtime": 1794075806.2073026,
+    "seen": 1794076815.2189066,
+    "ast_hash": "04aa0c8d2c1578ed7456376555df3db9",
+    "semantic_hash": ""
+  },
+  "tests/fxa_persist_test.c": {
+    "mtime": 1794092217.9944198,
+    "seen": 1794093157.8625486,
+    "ast_hash": "b179dc9a2e70b00cc8d26b3ac6a9628c",
+    "semantic_hash": ""
+  },
+  "tests/fxa_test.c": {
+    "mtime": 1794057361.840003,
+    "seen": 1794074405.4832718,
+    "ast_hash": "037dfedf582091cfbc78d2ac1dbfd25e",
+    "semantic_hash": "037dfedf582091cfbc78d2ac1dbfd25e"
+  },
+  "CLAUDE.md": {
+    "mtime": 1794060543.6260436,
+    "seen": 1794074405.4833803,
+    "ast_hash": "52ad5a2bd87326b3386e5b82b6832d03",
+    "semantic_hash": ""
+  },
+  "LICENSES/Apache-2.0-msfa.txt": {
+    "mtime": 1793009923.9410925,
+    "seen": 1794054524.910216,
+    "ast_hash": "084a92646fd00d5af6f3dd18af4192c0",
+    "semantic_hash": "084a92646fd00d5af6f3dd18af4192c0"
+  },
+  "assets/fonts/Terminus-LICENSE.txt": {
+    "mtime": 1793009923.9439468,
+    "seen": 1794054524.9104772,
+    "ast_hash": "8a49132350b45e4a8dbe726c9acfb870",
+    "semantic_hash": "8a49132350b45e4a8dbe726c9acfb870"
+  },
+  "assets/hiphop-pack/CREDITS.txt": {
+    "mtime": 1793009923.948096,
+    "seen": 1794054524.9104795,
+    "ast_hash": "d8e3257b8dcb79b78d0da68183c72953",
+    "semantic_hash": "d8e3257b8dcb79b78d0da68183c72953"
+  },
+  "assets/samples-cc0/ATTRIBUTION.txt": {
+    "mtime": 1793009923.9651046,
+    "seen": 1794054524.9104822,
+    "ast_hash": "c5d90f3d52f15b8b0444b0f0ea7a5573",
+    "semantic_hash": "c5d90f3d52f15b8b0444b0f0ea7a5573"
+  },
+  "assets/samples-cc0/CREDITS.txt": {
+    "mtime": 1793009923.9671056,
+    "seen": 1794054524.9104843,
+    "ast_hash": "65e67ec46ed1ad2e7c2747cbffbd67a4",
+    "semantic_hash": "65e67ec46ed1ad2e7c2747cbffbd67a4"
+  },
+  "docs/index.html": {
+    "mtime": 1793009924.01613,
+    "seen": 1794054524.9104862,
+    "ast_hash": "c3f00970192f2217d6f0a33664f88d92",
+    "semantic_hash": "c3f00970192f2217d6f0a33664f88d92"
+  },
+  "docs/webapp/editor/FUKIAI-LICENSE.txt": {
+    "mtime": 1793009924.017127,
+    "seen": 1794054524.9104888,
+    "ast_hash": "989c605538019fe5581a99522cefcf4a",
+    "semantic_hash": "989c605538019fe5581a99522cefcf4a"
+  },
+  "docs/webapp/editor/index.html": {
+    "mtime": 1794057361.8330042,
+    "seen": 1794074405.4834025,
+    "ast_hash": "bdf1f9ef456408339302224f72609b4a",
+    "semantic_hash": ""
+  },
+  "docs/webapp/editor/sloop-editor.html": {
+    "mtime": 1793009924.026135,
+    "seen": 1794054524.9104931,
+    "ast_hash": "27a2a28b726a0b1faf08c2e390f1fb9b",
+    "semantic_hash": "27a2a28b726a0b1faf08c2e390f1fb9b"
+  },
+  "docs/webapp/installer/index.html": {
+    "mtime": 1794057361.8340042,
+    "seen": 1794074405.483405,
+    "ast_hash": "1962500c4b70d326f855a6002f773349",
+    "semantic_hash": ""
+  },
+  "tests/cpu_baseline.txt": {
+    "mtime": 1793009924.0558212,
+    "seen": 1794054524.910497,
+    "ast_hash": "37c09cac595253eeb8a50ea6609751c7",
+    "semantic_hash": "37c09cac595253eeb8a50ea6609751c7"
+  },
+  "tests/golden.txt": {
+    "mtime": 1793647647.368788,
+    "seen": 1794054524.910499,
+    "ast_hash": "9177b167a46203ce652aaedfdb33dcbe",
+    "semantic_hash": "9177b167a46203ce652aaedfdb33dcbe"
+  },
+  "tests/target_budget.txt": {
+    "mtime": 1793009924.062153,
+    "seen": 1794054524.910501,
+    "ast_hash": "3febe6f043fcf6805aa3d50730ad9200",
+    "semantic_hash": "3febe6f043fcf6805aa3d50730ad9200"
+  },
+  "web/FUKIAI-LICENSE.txt": {
+    "mtime": 1793009924.0677435,
+    "seen": 1794054524.9105918,
+    "ast_hash": "989c605538019fe5581a99522cefcf4a",
+    "semantic_hash": "989c605538019fe5581a99522cefcf4a"
+  },
+  "web/editor.html": {
+    "mtime": 1793009924.068156,
+    "seen": 1794054524.9105942,
+    "ast_hash": "86dde7d5c47ca9c9972bd13096e53e5b",
+    "semantic_hash": "86dde7d5c47ca9c9972bd13096e53e5b"
+  },
+  "web/index_pkg.html": {
+    "mtime": 1793647647.3714566,
+    "seen": 1794054524.910597,
+    "ast_hash": "ff04d789a1afe43b1d68d59659cbc300",
+    "semantic_hash": "ff04d789a1afe43b1d68d59659cbc300"
+  },
+  "assets/icons.png": {
+    "mtime": 1793009923.9631035,
+    "seen": 1794054524.9105995,
+    "ast_hash": "8e5b026d9bcd034989b7b18e86f537a5",
+    "semantic_hash": "8e5b026d9bcd034989b7b18e86f537a5"
+  },
+  "assets/logo/sloop-icon.png": {
+    "mtime": 1793009923.964104,
+    "seen": 1794054524.9106016,
+    "ast_hash": "eb63b7f04ab330309ff441b6f2ee05ed",
+    "semantic_hash": "eb63b7f04ab330309ff441b6f2ee05ed"
+  },
+  "assets/logo/sloop-icon.svg": {
+    "mtime": 1793009923.964104,
+    "seen": 1794054524.9106038,
+    "ast_hash": "d350a5633edd1246d0f43d5477937584",
+    "semantic_hash": "d350a5633edd1246d0f43d5477937584"
+  },
+  "assets/logo/sloop-logo.png": {
+    "mtime": 1793009923.9651046,
+    "seen": 1794054524.910606,
+    "ast_hash": "be15b69cb67ba8e37c9b2e2456d1f80d",
+    "semantic_hash": "be15b69cb67ba8e37c9b2e2456d1f80d"
+  },
+  "assets/logo/sloop-splash.png": {
+    "mtime": 1793009923.9651046,
+    "seen": 1794054524.910608,
+    "ast_hash": "1734201029812bdfcfc05a497b3d1a63",
+    "semantic_hash": "1734201029812bdfcfc05a497b3d1a63"
+  },
+  "assets/screens/editor-backup.png": {
+    "mtime": 1793009924.0051246,
+    "seen": 1794054524.9106107,
+    "ast_hash": "df08d21ac9edab716218a4dfd95a6056",
+    "semantic_hash": "df08d21ac9edab716218a4dfd95a6056"
+  },
+  "assets/screens/editor-cartridge.png": {
+    "mtime": 1793009924.006125,
+    "seen": 1794054524.910613,
+    "ast_hash": "f5276241ae4b687b584d9a4779d75d68",
+    "semantic_hash": "f5276241ae4b687b584d9a4779d75d68"
+  },
+  "assets/screens/editor-chop.png": {
+    "mtime": 1793009924.0071256,
+    "seen": 1794054524.910615,
+    "ast_hash": "70541abd0fbd0f1d4f2fe491dd012433",
+    "semantic_hash": "70541abd0fbd0f1d4f2fe491dd012433"
+  },
+  "assets/screens/editor-drums.png": {
+    "mtime": 1793009924.0071256,
+    "seen": 1794054524.9106174,
+    "ast_hash": "285e92ce95e76211a7b1fd40df7dd63c",
+    "semantic_hash": "285e92ce95e76211a7b1fd40df7dd63c"
+  },
+  "assets/screens/editor-drumsynth.png": {
+    "mtime": 1793009924.0091264,
+    "seen": 1794054524.9106197,
+    "ast_hash": "80d2f247e62ce9b638b34ee9266a2a1e",
+    "semantic_hash": "80d2f247e62ce9b638b34ee9266a2a1e"
+  },
+  "assets/screens/editor-midi-texture.png": {
+    "mtime": 1793009924.0091264,
+    "seen": 1794054524.910622,
+    "ast_hash": "a4605d353524bbc4d7e816d95f24f81f",
+    "semantic_hash": "a4605d353524bbc4d7e816d95f24f81f"
+  },
+  "assets/screens/editor-pianoroll.png": {
+    "mtime": 1793009924.010127,
+    "seen": 1794054524.910624,
+    "ast_hash": "96e1be008788c1b3ad5ddada5d99240b",
+    "semantic_hash": "96e1be008788c1b3ad5ddada5d99240b"
+  },
+  "assets/screens/editor-sound.png": {
+    "mtime": 1793009924.010127,
+    "seen": 1794054524.910626,
+    "ast_hash": "3d793129dff9d47fb2e9a4050f875413",
+    "semantic_hash": "3d793129dff9d47fb2e9a4050f875413"
+  },
+  "assets/screens/layer-punch-on.png": {
+    "mtime": 1793009924.010127,
+    "seen": 1794054524.910628,
+    "ast_hash": "e5fb54ebaf0327b654c0511642d0d9ab",
+    "semantic_hash": "e5fb54ebaf0327b654c0511642d0d9ab"
+  },
+  "assets/screens/layer-steps.png": {
+    "mtime": 1793009924.010127,
+    "seen": 1794054524.9106302,
+    "ast_hash": "bf39b5a16ee8e0caee10bc983abdca4a",
+    "semantic_hash": "bf39b5a16ee8e0caee10bc983abdca4a"
+  },
+  "assets/screens/live-grid.png": {
+    "mtime": 1793009924.010127,
+    "seen": 1794054524.9106321,
+    "ast_hash": "1a439aba75ba2bb24189aadd6ade7f6f",
+    "semantic_hash": "1a439aba75ba2bb24189aadd6ade7f6f"
+  },
+  "assets/screens/live-tracks.png": {
+    "mtime": 1793009924.010127,
+    "seen": 1794054524.9106345,
+    "ast_hash": "66d4cbecf1590c968ac9a18fa5a458bd",
+    "semantic_hash": "66d4cbecf1590c968ac9a18fa5a458bd"
+  },
+  "assets/screens/screens.png": {
+    "mtime": 1793009924.010127,
+    "seen": 1794054524.9106364,
+    "ast_hash": "8c7d3a6846c0553dec3bcd95196fa5be",
+    "semantic_hash": "8c7d3a6846c0553dec3bcd95196fa5be"
+  },
+  "assets/screens/sloop-2.3-screens.png": {
+    "mtime": 1793009924.0111275,
+    "seen": 1794054524.9106388,
+    "ast_hash": "d1dda72da3a3b215b9dbbcb77cb461e3",
+    "semantic_hash": "d1dda72da3a3b215b9dbbcb77cb461e3"
+  },
+  "assets/screens/sloop-2.5-screens.png": {
+    "mtime": 1793009924.0111275,
+    "seen": 1794054524.910641,
+    "ast_hash": "32b8111e7f601592e89bd39cd7117738",
+    "semantic_hash": "32b8111e7f601592e89bd39cd7117738"
+  },
+  "assets/screens/sloop-2.6-screens.png": {
+    "mtime": 1793009924.012128,
+    "seen": 1794054524.910643,
+    "ast_hash": "4c686d7486c624598cbcff9f3d00f83d",
+    "semantic_hash": "4c686d7486c624598cbcff9f3d00f83d"
+  },
+  "assets/screens/sloop-screens.png": {
+    "mtime": 1793009924.0131285,
+    "seen": 1794054524.9106452,
+    "ast_hash": "6ce84529697fbc63165350149b2d2748",
+    "semantic_hash": "6ce84529697fbc63165350149b2d2748"
+  },
+  "docs/webapp/icon-192.png": {
+    "mtime": 1793009924.0351396,
+    "seen": 1794054524.9106474,
+    "ast_hash": "01af2181892b06d0b8b422340b2eb3ae",
+    "semantic_hash": "01af2181892b06d0b8b422340b2eb3ae"
+  },
+  "docs/webapp/icon-512.png": {
+    "mtime": 1793009924.0351396,
+    "seen": 1794054524.9106493,
+    "ast_hash": "de7dce5431bd627351eb81fbdbb6ca38",
+    "semantic_hash": "de7dce5431bd627351eb81fbdbb6ca38"
+  },
+  "docs/webapp/icon-maskable-512.png": {
+    "mtime": 1793009924.0351396,
+    "seen": 1794054524.9106514,
+    "ast_hash": "1ed0bfad7d3bb564a8f7c0767d2ab876",
+    "semantic_hash": "1ed0bfad7d3bb564a8f7c0767d2ab876"
+  },
+  "web/icon-192.png": {
+    "mtime": 1793009924.0691564,
+    "seen": 1794054524.9106536,
+    "ast_hash": "01af2181892b06d0b8b422340b2eb3ae",
+    "semantic_hash": "01af2181892b06d0b8b422340b2eb3ae"
+  },
+  "web/icon-512.png": {
+    "mtime": 1793009924.0691564,
+    "seen": 1794054524.9106562,
+    "ast_hash": "de7dce5431bd627351eb81fbdbb6ca38",
+    "semantic_hash": "de7dce5431bd627351eb81fbdbb6ca38"
+  },
+  "assets/hiphop-pack/BASS/00_E1.wav": {
+    "mtime": 1793009923.9456964,
+    "seen": 1794054524.9106586,
+    "ast_hash": "5fba905ddf321986bee9f91b396e0161",
+    "semantic_hash": "5fba905ddf321986bee9f91b396e0161"
+  },
+  "assets/hiphop-pack/BASS/01_As1.wav": {
+    "mtime": 1793009923.9462261,
+    "seen": 1794054524.910661,
+    "ast_hash": "c393062c24bd887d9150b073c82a1fd7",
+    "semantic_hash": "c393062c24bd887d9150b073c82a1fd7"
+  },
+  "assets/hiphop-pack/BASS/02_D2.wav": {
+    "mtime": 1793009923.9462261,
+    "seen": 1794054524.910663,
+    "ast_hash": "cc1fc708ca641a362ae824a96fa262ca",
+    "semantic_hash": "cc1fc708ca641a362ae824a96fa262ca"
+  },
+  "assets/hiphop-pack/BASS/03_Fs2.wav": {
+    "mtime": 1793009923.9470954,
+    "seen": 1794054524.910665,
+    "ast_hash": "f37fada339107371fb5d9538ca6c68e4",
+    "semantic_hash": "f37fada339107371fb5d9538ca6c68e4"
+  },
+  "assets/hiphop-pack/BASS/04_A2.wav": {
+    "mtime": 1793009923.9470954,
+    "seen": 1794054524.9106672,
+    "ast_hash": "0cc3bcac427ea11200b1582bf52f7555",
+    "semantic_hash": "0cc3bcac427ea11200b1582bf52f7555"
+  },
+  "assets/hiphop-pack/BASS/05_Cs3.wav": {
+    "mtime": 1793009923.948096,
+    "seen": 1794054524.9106696,
+    "ast_hash": "f9a3e84686fd6a0d53fe0c150c23a15e",
+    "semantic_hash": "f9a3e84686fd6a0d53fe0c150c23a15e"
+  },
+  "assets/hiphop-pack/EPIANO/00_A2.wav": {
+    "mtime": 1793009923.948096,
+    "seen": 1794054524.9106717,
+    "ast_hash": "1a9d83de60455edf8a1356812c69093c",
+    "semantic_hash": "1a9d83de60455edf8a1356812c69093c"
+  },
+  "assets/hiphop-pack/EPIANO/01_Ds3.wav": {
+    "mtime": 1793009923.9493299,
+    "seen": 1794054524.9106739,
+    "ast_hash": "aa928b82ed3e4d36557de30402392b86",
+    "semantic_hash": "aa928b82ed3e4d36557de30402392b86"
+  },
+  "assets/hiphop-pack/EPIANO/02_Cs4.wav": {
+    "mtime": 1793009923.950097,
+    "seen": 1794054524.9106762,
+    "ast_hash": "2a633cc8e2e921fe9f464b036c791cb0",
+    "semantic_hash": "2a633cc8e2e921fe9f464b036c791cb0"
+  },
+  "assets/hiphop-pack/EPIANO/03_B4.wav": {
+    "mtime": 1793009923.950097,
+    "seen": 1794054524.9106786,
+    "ast_hash": "375ca8cd16a1f2a28af66ec802525afe",
+    "semantic_hash": "375ca8cd16a1f2a28af66ec802525afe"
+  },
+  "assets/hiphop-pack/HORNS/00_F3.wav": {
+    "mtime": 1793009923.9510975,
+    "seen": 1794054524.9106805,
+    "ast_hash": "483b934d7fc9387e5361b63553c75d3f",
+    "semantic_hash": "483b934d7fc9387e5361b63553c75d3f"
+  },
+  "assets/hiphop-pack/HORNS/01_A3.wav": {
+    "mtime": 1793009923.9510975,
+    "seen": 1794054524.910683,
+    "ast_hash": "26ba10b083e0bf65c008ea2dfb7e9d2f",
+    "semantic_hash": "26ba10b083e0bf65c008ea2dfb7e9d2f"
+  },
+  "assets/hiphop-pack/HORNS/02_C4.wav": {
+    "mtime": 1793009923.9510975,
+    "seen": 1794054524.9106853,
+    "ast_hash": "a8769358503539144f2d0e2d68d1826c",
+    "semantic_hash": "a8769358503539144f2d0e2d68d1826c"
+  },
+  "assets/hiphop-pack/HORNS/03_Ds4.wav": {
+    "mtime": 1793009923.952098,
+    "seen": 1794054524.910687,
+    "ast_hash": "34ffc409ec806b59fdc0c158feca7b22",
+    "semantic_hash": "34ffc409ec806b59fdc0c158feca7b22"
+  },
+  "assets/hiphop-pack/HORNS/04_G4.wav": {
+    "mtime": 1793009923.952098,
+    "seen": 1794054524.9106896,
+    "ast_hash": "31540d437dfe278479e1675861975e6b",
+    "semantic_hash": "31540d437dfe278479e1675861975e6b"
+  },
+  "assets/hiphop-pack/HORNS/05_As4.wav": {
+    "mtime": 1793009923.952098,
+    "seen": 1794054524.9106917,
+    "ast_hash": "9c4df18edff98b0be705dc6218f053ed",
+    "semantic_hash": "9c4df18edff98b0be705dc6218f053ed"
+  },
+  "assets/hiphop-pack/HORNS/06_D5.wav": {
+    "mtime": 1793009923.9530985,
+    "seen": 1794054524.9106941,
+    "ast_hash": "a3094e76f2378de928db7658322e0b2e",
+    "semantic_hash": "a3094e76f2378de928db7658322e0b2e"
+  },
+  "assets/hiphop-pack/SCRATCH/00_vinyl_scratch.wav": {
+    "mtime": 1793009923.9530985,
+    "seen": 1794054524.9106963,
+    "ast_hash": "ec03a4763fdb91837afdb749f23b947d",
+    "semantic_hash": "ec03a4763fdb91837afdb749f23b947d"
+  },
+  "assets/hiphop-pack/SCRATCH/01_vinyl_backspin.wav": {
+    "mtime": 1793009923.954284,
+    "seen": 1794054524.9106984,
+    "ast_hash": "8675624db07aa0a428a1ca600da72ad7",
+    "semantic_hash": "8675624db07aa0a428a1ca600da72ad7"
+  },
+  "assets/hiphop-pack/SCRATCH/02_vinyl_rewind.wav": {
+    "mtime": 1793009923.9550996,
+    "seen": 1794054524.9107008,
+    "ast_hash": "6a82785d33bc3d33a69dfceba2244c00",
+    "semantic_hash": "6a82785d33bc3d33a69dfceba2244c00"
+  },
+  "assets/hiphop-pack/SCRATCH/03_perc_snap.wav": {
+    "mtime": 1793009923.9550996,
+    "seen": 1794054524.910703,
+    "ast_hash": "5a2aeb5e72a36cd401f60b3dc5894944",
+    "semantic_hash": "5a2aeb5e72a36cd401f60b3dc5894944"
+  },
+  "assets/hiphop-pack/STRINGS/00_G3.wav": {
+    "mtime": 1793009923.9550996,
+    "seen": 1794054524.9107049,
+    "ast_hash": "793b62a0a97c9a5fddc1a03bd1f308c6",
+    "semantic_hash": "793b62a0a97c9a5fddc1a03bd1f308c6"
+  },
+  "assets/hiphop-pack/STRINGS/01_B3.wav": {
+    "mtime": 1793009923.956198,
+    "seen": 1794054524.9107072,
+    "ast_hash": "3b4601f27153583ea24d51e47d3cb81c",
+    "semantic_hash": "3b4601f27153583ea24d51e47d3cb81c"
+  },
+  "assets/hiphop-pack/STRINGS/02_D4.wav": {
+    "mtime": 1793009923.956198,
+    "seen": 1794054524.9107096,
+    "ast_hash": "8f1ff96b494c0a4455fc08bbde043d9b",
+    "semantic_hash": "8f1ff96b494c0a4455fc08bbde043d9b"
+  },
+  "assets/hiphop-pack/STRINGS/03_Fs4.wav": {
+    "mtime": 1793009923.956198,
+    "seen": 1794054524.9107115,
+    "ast_hash": "d0c1b15ab4da433b6ef7bf08c3960360",
+    "semantic_hash": "d0c1b15ab4da433b6ef7bf08c3960360"
+  },
+  "assets/hiphop-pack/STRINGS/04_A4.wav": {
+    "mtime": 1793009923.9571006,
+    "seen": 1794054524.9107137,
+    "ast_hash": "e55882350b1eed1d5eec7337a6157be7",
+    "semantic_hash": "e55882350b1eed1d5eec7337a6157be7"
+  },
+  "assets/hiphop-pack/STRINGS/05_C5.wav": {
+    "mtime": 1793009923.9571006,
+    "seen": 1794054524.9107156,
+    "ast_hash": "9d81590e993aa17e68aa5838b001f861",
+    "semantic_hash": "9d81590e993aa17e68aa5838b001f861"
+  },
+  "assets/hiphop-pack/STRINGS/06_E5.wav": {
+    "mtime": 1793009923.958101,
+    "seen": 1794054524.9107177,
+    "ast_hash": "8e1b90f56e47fb441a7dacdac6e06786",
+    "semantic_hash": "8e1b90f56e47fb441a7dacdac6e06786"
+  },
+  "assets/hiphop-pack/UPRIGHT/00_F3.wav": {
+    "mtime": 1793009923.958101,
+    "seen": 1794054524.9107196,
+    "ast_hash": "fea91d08654aecbc0fbf1731bbd6c4f3",
+    "semantic_hash": "fea91d08654aecbc0fbf1731bbd6c4f3"
+  },
+  "assets/hiphop-pack/UPRIGHT/01_B3.wav": {
+    "mtime": 1793009923.9592369,
+    "seen": 1794054524.910722,
+    "ast_hash": "0609bf52c8709f58f0846cd31ed6e3f5",
+    "semantic_hash": "0609bf52c8709f58f0846cd31ed6e3f5"
+  },
+  "assets/hiphop-pack/UPRIGHT/02_F4.wav": {
+    "mtime": 1793009923.960102,
+    "seen": 1794054524.9107244,
+    "ast_hash": "6e908e9df3695927da9dbb43dca5ea8b",
+    "semantic_hash": "6e908e9df3695927da9dbb43dca5ea8b"
+  },
+  "assets/hiphop-pack/UPRIGHT/03_Cs5.wav": {
+    "mtime": 1793009923.960102,
+    "seen": 1794054524.9107265,
+    "ast_hash": "5abcd2358e930dfaf2fc9d10e854f7cb",
+    "semantic_hash": "5abcd2358e930dfaf2fc9d10e854f7cb"
+  },
+  "assets/hiphop-pack/VIBES/00_F3.wav": {
+    "mtime": 1793009923.9611025,
+    "seen": 1794054524.910729,
+    "ast_hash": "ddc73253405eef8f805a2c6c2ce36139",
+    "semantic_hash": "ddc73253405eef8f805a2c6c2ce36139"
+  },
+  "assets/hiphop-pack/VIBES/01_C4.wav": {
+    "mtime": 1793009923.9621031,
+    "seen": 1794054524.910731,
+    "ast_hash": "86cdacd2078b516257750a074fd37a94",
+    "semantic_hash": "86cdacd2078b516257750a074fd37a94"
+  },
+  "assets/hiphop-pack/VIBES/02_G4.wav": {
+    "mtime": 1793009923.9631035,
+    "seen": 1794054524.910733,
+    "ast_hash": "206d6351935f982531924b207c310604",
+    "semantic_hash": "206d6351935f982531924b207c310604"
+  },
+  "assets/hiphop-pack/VIBES/03_D5.wav": {
+    "mtime": 1793009923.9631035,
+    "seen": 1794054524.9107354,
+    "ast_hash": "75e3d5b2fef01da5cd2bed4108f44a90",
+    "semantic_hash": "75e3d5b2fef01da5cd2bed4108f44a90"
+  },
+  "assets/samples-cc0/BASS/00_E1_m52.wav": {
+    "mtime": 1793009923.9659545,
+    "seen": 1794054524.9107375,
+    "ast_hash": "aaa3c3d6d28674cdd319e353b7c225cd",
+    "semantic_hash": "aaa3c3d6d28674cdd319e353b7c225cd"
+  },
+  "assets/samples-cc0/BASS/01_B1_m59.wav": {
+    "mtime": 1793009923.9663656,
+    "seen": 1794054524.9107397,
+    "ast_hash": "eba317f135c0838bf7e274b1209decd4",
+    "semantic_hash": "eba317f135c0838bf7e274b1209decd4"
+  },
+  "assets/samples-cc0/BASS/02_Fs2_m66.wav": {
+    "mtime": 1793009923.9663656,
+    "seen": 1794054524.9107423,
+    "ast_hash": "ef9eb98f5c4cd867e5ab459d5996cb23",
+    "semantic_hash": "ef9eb98f5c4cd867e5ab459d5996cb23"
+  },
+  "assets/samples-cc0/BASS/03_Cs3_m73.wav": {
+    "mtime": 1793009923.9671056,
+    "seen": 1794054524.9107444,
+    "ast_hash": "bf25e0d7810464d8052447b848c8e3a8",
+    "semantic_hash": "bf25e0d7810464d8052447b848c8e3a8"
+  },
+  "assets/samples-cc0/FLUTE/00_LDFlute_susvib_C4_v1_1.wav": {
+    "mtime": 1793009923.9711075,
+    "seen": 1794054524.9107468,
+    "ast_hash": "f9792edbea9b48354e7c9ab7372be6ac",
+    "semantic_hash": "f9792edbea9b48354e7c9ab7372be6ac"
+  },
+  "assets/samples-cc0/FLUTE/01_LDFlute_susvib_C5_v1_1.wav": {
+    "mtime": 1793009923.9751096,
+    "seen": 1794054524.9107492,
+    "ast_hash": "a4a2256905c5675900afbfbd7ce3529b",
+    "semantic_hash": "a4a2256905c5675900afbfbd7ce3529b"
+  },
+  "assets/samples-cc0/FLUTE/02_LDFlute_susvib_C6_v1_1.wav": {
+    "mtime": 1793009923.9791114,
+    "seen": 1794054524.9107516,
+    "ast_hash": "78223f15eee0dba758dde85ad70e7385",
+    "semantic_hash": "78223f15eee0dba758dde85ad70e7385"
+  },
+  "assets/samples-cc0/HORNS/00_G3_m55.wav": {
+    "mtime": 1793009923.980112,
+    "seen": 1794054524.9107535,
+    "ast_hash": "efbd2c6fc61f26437893ffcfeadd1189",
+    "semantic_hash": "efbd2c6fc61f26437893ffcfeadd1189"
+  },
+  "assets/samples-cc0/HORNS/01_D4_m62.wav": {
+    "mtime": 1793009923.9809434,
+    "seen": 1794054524.9107559,
+    "ast_hash": "86bef02224ff5cd63a02b7faf3eb49ed",
+    "semantic_hash": "86bef02224ff5cd63a02b7faf3eb49ed"
+  },
+  "assets/samples-cc0/HORNS/02_A4_m69.wav": {
+    "mtime": 1793009923.9811125,
+    "seen": 1794054524.9107583,
+    "ast_hash": "0e90d2114ae39e5478f5256f4d78c557",
+    "semantic_hash": "0e90d2114ae39e5478f5256f4d78c557"
+  },
+  "assets/samples-cc0/HORNS/03_E5_m76.wav": {
+    "mtime": 1793009923.9811125,
+    "seen": 1794054524.9107604,
+    "ast_hash": "de30cfc8e832239b0a75629ecf34efac",
+    "semantic_hash": "de30cfc8e832239b0a75629ecf34efac"
+  },
+  "assets/samples-cc0/KIT/00_Tamb1_Hit_v2_rr1_Mid.wav": {
+    "mtime": 1793009923.9831135,
+    "seen": 1794054524.910763,
+    "ast_hash": "6bf25fc9e5ab014ee480e5dff215633a",
+    "semantic_hash": "6bf25fc9e5ab014ee480e5dff215633a"
+  },
+  "assets/samples-cc0/KIT/01_Mid_ShakerDouble_Down_rr1.wav": {
+    "mtime": 1793009923.9831135,
+    "seen": 1794054524.9107652,
+    "ast_hash": "740e89db8e0088f6852fb124eca3a752",
+    "semantic_hash": "740e89db8e0088f6852fb124eca3a752"
+  },
+  "assets/samples-cc0/KIT/02_Conga_HitN_v2_rr1_Sum.wav": {
+    "mtime": 1793009923.984114,
+    "seen": 1794054524.9107673,
+    "ast_hash": "4e83963bcef1edc15b17dfadd23f6f30",
+    "semantic_hash": "4e83963bcef1edc15b17dfadd23f6f30"
+  },
+  "assets/samples-cc0/KIT/03_Claves1_Hit_v2_rr1_Mid.wav": {
+    "mtime": 1793009923.9851146,
+    "seen": 1794054524.9107697,
+    "ast_hash": "6335232095ac65499e37544dc0c815c5",
+    "semantic_hash": "6335232095ac65499e37544dc0c815c5"
+  },
+  "assets/samples-cc0/KIT/04_wood_click_mp.wav": {
+    "mtime": 1793009923.9871156,
+    "seen": 1794054524.910772,
+    "ast_hash": "741d519edc1157f6e82e33c0df77380e",
+    "semantic_hash": "741d519edc1157f6e82e33c0df77380e"
+  },
+  "assets/samples-cc0/KIT/10_kick_BDrumNew_hit_v5.wav": {
+    "mtime": 1793009923.9871156,
+    "seen": 1794054524.9107742,
+    "ast_hash": "50aa531a029f66ee970a2affa3f2d11e",
+    "semantic_hash": "50aa531a029f66ee970a2affa3f2d11e"
+  },
+  "assets/samples-cc0/KIT/11_snare_Snare2_HitSN_v7.wav": {
+    "mtime": 1793009923.988116,
+    "seen": 1794054524.9107766,
+    "ast_hash": "b8af521b69b7fd3755611bd50d17d51a",
+    "semantic_hash": "b8af521b69b7fd3755611bd50d17d51a"
+  },
+  "assets/samples-cc0/KIT/12_rim_sidestick.wav": {
+    "mtime": 1793009923.988116,
+    "seen": 1794054524.9107785,
+    "ast_hash": "3d7a545ad747a38ea41f5570c6c64846",
+    "semantic_hash": "3d7a545ad747a38ea41f5570c6c64846"
+  },
+  "assets/samples-cc0/KIT/13_clap_Clap_rr1.wav": {
+    "mtime": 1793009923.9891164,
+    "seen": 1794054524.910781,
+    "ast_hash": "41bb4133fdbde33b88891c209fe9937b",
+    "semantic_hash": "41bb4133fdbde33b88891c209fe9937b"
+  },
+  "assets/samples-cc0/KIT/14_hihat_HitC_v3.wav": {
+    "mtime": 1793009923.9891164,
+    "seen": 1794054524.9107833,
+    "ast_hash": "1d892ec1a352ef0d2f754813b56cf7da",
+    "semantic_hash": "1d892ec1a352ef0d2f754813b56cf7da"
+  },
+  "assets/samples-cc0/KIT/15_ohat_HitO.wav": {
+    "mtime": 1793009923.990117,
+    "seen": 1794054524.9107852,
+    "ast_hash": "8daa792e50a265f98309176f87e6902c",
+    "semantic_hash": "8daa792e50a265f98309176f87e6902c"
+  },
+  "assets/samples-cc0/KIT/16_tomlo_TomL_HitS_v4.wav": {
+    "mtime": 1793009923.9911175,
+    "seen": 1794054524.9107873,
+    "ast_hash": "73f2de1c09eed211f0773e2d42c780d7",
+    "semantic_hash": "73f2de1c09eed211f0773e2d42c780d7"
+  },
+  "assets/samples-cc0/KIT/17_tomhi_TomH_HitS_v4.wav": {
+    "mtime": 1793009923.9921181,
+    "seen": 1794054524.9107897,
+    "ast_hash": "0aa28bdc0cf0327437a0a2a186958db7",
+    "semantic_hash": "0aa28bdc0cf0327437a0a2a186958db7"
+  },
+  "assets/samples-cc0/KIT/18_crash_susCymb2_hit_f1.wav": {
+    "mtime": 1793009923.9931185,
+    "seen": 1794054524.9107919,
+    "ast_hash": "e5959aa8aca9ea451a3459c89d8cdc6c",
+    "semantic_hash": "e5959aa8aca9ea451a3459c89d8cdc6c"
+  },
+  "assets/samples-cc0/KIT/19_ride_susCymb2_stick_mf1.wav": {
+    "mtime": 1793009923.99612,
+    "seen": 1794054524.910794,
+    "ast_hash": "059638cb3663231734d2235655036b88",
+    "semantic_hash": "059638cb3663231734d2235655036b88"
+  },
+  "assets/samples-cc0/KIT/20_cowbell_Cowbell1_Normal_v3.wav": {
+    "mtime": 1793009923.99612,
+    "seen": 1794054524.9107964,
+    "ast_hash": "c944d2ba2af45f05f6e531f8c8868119",
+    "semantic_hash": "c944d2ba2af45f05f6e531f8c8868119"
+  },
+  "assets/samples-cc0/PIANO/00_C3_m48.wav": {
+    "mtime": 1793009923.9971206,
+    "seen": 1794054524.9107985,
+    "ast_hash": "ca839e75f2be1644e63ad8fb57be0c91",
+    "semantic_hash": "ca839e75f2be1644e63ad8fb57be0c91"
+  },
+  "assets/samples-cc0/PIANO/01_Gs3_m56.wav": {
+    "mtime": 1793009923.998121,
+    "seen": 1794054524.910801,
+    "ast_hash": "43832b9e35deb270f0302fb4945188a5",
+    "semantic_hash": "43832b9e35deb270f0302fb4945188a5"
+  },
+  "assets/samples-cc0/PIANO/02_E4_m64.wav": {
+    "mtime": 1793009923.9991214,
+    "seen": 1794054524.9108036,
+    "ast_hash": "a5e1bbee555da641df89be304e503750",
+    "semantic_hash": "a5e1bbee555da641df89be304e503750"
+  },
+  "assets/samples-cc0/PIANO/03_C5_m72.wav": {
+    "mtime": 1793009924.000122,
+    "seen": 1794054524.9108055,
+    "ast_hash": "1cf72f43a80cb6158c3549895ea33664",
+    "semantic_hash": "1cf72f43a80cb6158c3549895ea33664"
+  },
+  "assets/samples-cc0/SCRCH/00_vinyl_scratch_m57.wav": {
+    "mtime": 1793009924.0011225,
+    "seen": 1794054524.910808,
+    "ast_hash": "ec03a4763fdb91837afdb749f23b947d",
+    "semantic_hash": "ec03a4763fdb91837afdb749f23b947d"
+  },
+  "assets/samples-cc0/SCRCH/01_vinyl_backspin_m65.wav": {
+    "mtime": 1793009924.0015917,
+    "seen": 1794054524.91081,
+    "ast_hash": "39d51d10a518134506a7066217c151e2",
+    "semantic_hash": "39d51d10a518134506a7066217c151e2"
+  },
+  "assets/samples-cc0/SCRCH/02_vinyl_rewind_m72.wav": {
+    "mtime": 1793009924.0015917,
+    "seen": 1794054524.9108124,
+    "ast_hash": "100b4a612c02adefe8f0bf1fbc3a0acf",
+    "semantic_hash": "100b4a612c02adefe8f0bf1fbc3a0acf"
+  },
+  "assets/samples-cc0/STRGS/00_G3_m55.wav": {
+    "mtime": 1793009924.002123,
+    "seen": 1794054524.9108145,
+    "ast_hash": "7979b9fb50b9cdf4bad43804224e1751",
+    "semantic_hash": "7979b9fb50b9cdf4bad43804224e1751"
+  },
+  "assets/samples-cc0/STRGS/01_E4_m64.wav": {
+    "mtime": 1793009924.0026596,
+    "seen": 1794054524.9108164,
+    "ast_hash": "f388f97f2203a80fc9d56d21df7f42dc",
+    "semantic_hash": "f388f97f2203a80fc9d56d21df7f42dc"
+  },
+  "assets/samples-cc0/STRGS/02_Cs5_m73.wav": {
+    "mtime": 1793009924.0026596,
+    "seen": 1794054524.9108186,
+    "ast_hash": "5385e6d357d3e9e6d4792252b45c6ea2",
+    "semantic_hash": "5385e6d357d3e9e6d4792252b45c6ea2"
+  },
+  "assets/samples-cc0/VIBES/00_F3_m53.wav": {
+    "mtime": 1793009924.0031235,
+    "seen": 1794054524.9108207,
+    "ast_hash": "9c9cadcbf9584333128cc6e540aea42b",
+    "semantic_hash": "9c9cadcbf9584333128cc6e540aea42b"
+  },
+  "assets/samples-cc0/VIBES/01_D4_m62.wav": {
+    "mtime": 1793009924.0031235,
+    "seen": 1794054524.9108226,
+    "ast_hash": "41ea80ed76661247e22d9689d57ea2f3",
+    "semantic_hash": "41ea80ed76661247e22d9689d57ea2f3"
+  },
+  "assets/samples-cc0/VIBES/02_B4_m71.wav": {
+    "mtime": 1793009924.004124,
+    "seen": 1794054524.910825,
+    "ast_hash": "44d5a96eb942951bce0d6869e80a28a2",
+    "semantic_hash": "44d5a96eb942951bce0d6869e80a28a2"
+  },
+  ".claude/hooks/branch-context.sh": {
+    "mtime": 1794060523.996274,
+    "seen": 1794074405.483107,
+    "ast_hash": "db8c0d5031df239e6e6596d9edf7f9ae",
+    "semantic_hash": ""
+  },
+  "firmware/hal/fm1_flash_id.h": {
+    "mtime": 1794057361.8350039,
+    "seen": 1794074405.4831393,
+    "ast_hash": "823f17707b06f32c0d453f3660d8b6c8",
+    "semantic_hash": ""
+  },
+  "tests/kmac_test.c": {
+    "mtime": 1794092217.9965007,
+    "seen": 1794093157.8625574,
+    "ast_hash": "27d6690e83b51a2013843c826fc41097",
+    "semantic_hash": ""
+  },
+  "assets/logo/sloop-logo.svg": {
+    "mtime": 1793009923.9651046,
+    "seen": 1794074405.483421,
+    "ast_hash": "64b768a13b8ff744f4abea917aa87fc0",
+    "semantic_hash": ""
+  },
+  "web/icon-maskable-512.png": {
+    "mtime": 1793009924.0691564,
+    "seen": 1794074405.4834538,
+    "ast_hash": "1ed0bfad7d3bb564a8f7c0767d2ab876",
+    "semantic_hash": ""
+  },
+  "tests/up_kmac_test.c": {
+    "mtime": 1794092218.0026276,
+    "seen": 1794093157.862612,
+    "ast_hash": "2c10fd10df86d0d85570ccaa84895e73",
+    "semantic_hash": ""
+  }
+}
